@@ -26,6 +26,8 @@
 | 6 Quality bar | done | axe (serious/critical none) on phone, together, family, recorder; 390 px no sideways scroll; console errors fail any browser test; tech-word scan of TV strings and phone pages; Lighthouse accessibility 100 on the phone page (`scripts/lighthouse-a11y.sh`); subagent TV screenshot review below |
 | 7 Demo and README | done | docs/DEMO.md (2:45, chair stand as the impact moment), README (3-line hook, sources, Where the code is) |
 
+**End step (done):** `npm run verify` exit 0 on worldclass (all slices PASS, S9 53 checks, Lighthouse 100) -> merged to main (no-ff) -> main stack deployed (same URLs as before) -> S0 check re-run against it: 2 passed -> APK installed on the emulator with main endpoints -> chair stand flow re-run end to end against the main stack -> tag submission-v2. Roll back: `git checkout submission-v1`. Wake-up note: docs/WAKE-UP.md.
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
