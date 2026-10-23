@@ -32,7 +32,11 @@ export async function tvCode(extras: string[] = []): Promise<string> {
 }
 
 export function tvScreenshotBuffer(): Buffer {
-  return execFileSync(ADB, ["exec-out", "screencap", "-p"], { maxBuffer: 50_000_000 });
+  // adb.exe through WSL sometimes fails a screencap with a socket error: retry before giving up
+  for (let attempt = 0; ; attempt++) {
+    try { return execFileSync(ADB, ["exec-out", "screencap", "-p"], { maxBuffer: 50_000_000 }); }
+    catch (e) { if (attempt >= 3) throw e; execFileSync("sleep", ["1"]); }
+  }
 }
 export function tvScreenshot(name: string): Buffer {
   fs.mkdirSync("docs/screens", { recursive: true });
