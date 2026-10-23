@@ -73,6 +73,7 @@ fun BigButton(label: String, onClick: () -> Unit, autoFocus: Boolean = true, fon
             focusedContainerColor = Color(0xFFBFE3F7), focusedContentColor = Ink.bg,
         ),
         border = ClickableSurfaceDefaults.border(focusedBorder = Border.None),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),  // the ring and fill show focus; growing would push into neighbours and the safe margin
     ) {
         // the Surface's content box passes its size down, so a fixed-size button centres its label
         Box(if (fixedSize) Modifier.fillMaxSize() else Modifier, contentAlignment = Alignment.Center) {
@@ -199,6 +200,10 @@ fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, toget
             Text("Move $setNo ${Sentences.OF} $setTotal", fontSize = 44.sp, color = Ink.soft)
             Spacer(Modifier.width(24.dp))
             Text(item.title, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Ink.text)
+            if (together != null) {
+                Spacer(Modifier.weight(1f))
+                Text("${Sentences.TOGETHER_TOTAL} ${together.total}", fontSize = 52.sp, fontWeight = FontWeight.Bold, color = Ink.warn)
+            }
         }
         Row(Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             if (together == null) Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
@@ -219,7 +224,6 @@ fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, toget
                 Box(Modifier.fillMaxWidth().height(20.dp).background(Color(0xFF5B7388), RoundedCornerShape(10.dp))) {
                     Box(Modifier.fillMaxWidth((count.toFloat() / item.target).coerceIn(0f, 1f)).fillMaxHeight().background(Ink.good, RoundedCornerShape(10.dp)))
                 }
-                if (together != null) { Spacer(Modifier.height(8.dp)); Text("${Sentences.TOGETHER_TOTAL} ${together.total}", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Ink.text) }
             }
         }
         // bottom banner: the form cue when there is one, otherwise what to do. With no voice on this TV, cues are bigger.
@@ -283,7 +287,7 @@ fun CalibrateScreen(cycles: Int, retry: Boolean, pose: PoseFrame?, onSkip: () ->
             Spacer(Modifier.height(12.dp))
             Text("$cycles ${Sentences.OF} 2", fontSize = 72.sp, fontWeight = FontWeight.Bold, color = Ink.good)
             Spacer(Modifier.height(12.dp))
-            BigButton(Sentences.CAL_SKIP, onSkip, fontSp = 40)
+            BigButton(Sentences.CAL_SKIP, onSkip, fontSp = 44)
         }
     }
 }
@@ -346,7 +350,7 @@ fun ChairGoScreen(count: Int, left: Int, cue: String?, pose: PoseFrame?, voice: 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(Sentences.CHAIR_BUTTON, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Ink.text)
             Spacer(Modifier.width(24.dp))
-            Text("$left s", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = Ink.warn)
+            Text("$left seconds", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = Ink.warn)
         }
         Row(Modifier.weight(1f).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
@@ -367,10 +371,10 @@ fun ChairGoScreen(count: Int, left: Int, cue: String?, pose: PoseFrame?, voice: 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ChairResultScreen(score: Int, age: Int, sex: Int, onOk: () -> Unit) = Page {
-    Text(Sentences.CHAIR_SCORE, fontSize = 48.sp, color = Ink.soft)
-    Text("$score", fontSize = 150.sp, fontWeight = FontWeight.Bold, color = Ink.good)
+    Text(Sentences.CHAIR_SCORE, fontSize = 44.sp, color = Ink.soft)
+    Text("$score", fontSize = 110.sp, fontWeight = FontWeight.Bold, color = Ink.good)
     Text(Sentences.CHAIR_STANDS, fontSize = 44.sp, color = Ink.text)
-    Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(8.dp))
     for (line in Cdc.lines(age, sex)) Text(line, fontSize = 40.sp, color = Ink.warn, textAlign = TextAlign.Center)
     Spacer(Modifier.height(14.dp))
     BigButton(Sentences.FINISH_OK, onOk, fontSp = 44)
