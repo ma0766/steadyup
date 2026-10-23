@@ -8,6 +8,7 @@ let phone: ScriptedPhone | undefined;
 test.afterEach(() => { phone?.close(); phone = undefined; });
 
 test("S4 a scripted run completes a 3-move session with every screen", async () => {
+  test.setTimeout(3 * 60_000); // ~85 s of real time (10 s rests so the rest screen can be photographed): the 90 s default is too tight
   const code = await tvCode(PLAN);
   phone = new ScriptedPhone(endpoints.wsUrl);
   await phone.join(code);
@@ -42,6 +43,7 @@ test("S4 a scripted run completes a 3-move session with every screen", async () 
 });
 
 test("S4 out of view for 10 seconds pauses, OK resumes", async () => {
+  test.setTimeout(3 * 60_000);
   const code = await tvCode(PLAN);
   phone = new ScriptedPhone(endpoints.wsUrl);
   phone.autoRun = false;
