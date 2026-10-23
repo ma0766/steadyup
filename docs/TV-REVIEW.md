@@ -1,61 +1,59 @@
 # TV accessibility review
 
-> **Update:** the one FAIL below (s1-tv-code, the raw web address) is fixed and verified: the pairing screen now shows only the QR and the number (screenshot regenerated from the green verify run). See docs/PROGRESS.md.
+Scope: 33 TV screenshots (1920x1080, 320 dpi, 40 sp = 80 px) from the latest green run. `s5-session-totals.txt` is not an image and was skipped. Phone, family and "ana" shots were skipped as asked.
 
-Text sizes in this review come from the measured data in `docs/text-sizes.json` (smallest text line per screen, read from the running app's UI tree; 40 sp = 93 px, floor is 92 px). Every measured screen is at least 94 px, so text size is PASS wherever the screen is in that file. I did not estimate sizes by eye. The splash, pairing and connected screens are not in the json, so they are marked "not measured". The other columns (contrast, clipping/overlap, focus ring, plain language, 5% safe margin) were judged by looking at each 1920x1080 screenshot. Text-size mapping: s4-3, s4-6, s5-intro-* use `intro`; s4-4, s4-7, s5-live-hold, s9-live-midset, s8 live shots and s2-tv-figure use `live` (same layout); s4-8, s5-finish, s9-finish use `finish`.
+Method: each image was looked at by eye. `docs/text-sizes.json` settled close calls. Contrast was judged from the palette: near-black navy background, white / pale blue / yellow / green text, dark navy text on light-blue and mid-blue buttons. All of these are well over 4.5:1 by eye (about 6:1 up to about 15:1).
 
-Overall status per row: PASS means all six checks pass. "Visual PASS" means all visual checks pass but text size is not measured.
+Legend: PASS = fine. WARN = works, but worth a fix. FAIL = real problem. "n/a" = no buttons on that screen. "Fully pass" means PASS on every column, and no WARN.
 
-| File | Screen | Text size | Contrast | Clipping / overlap | Focus ring | Note |
-| --- | --- | --- | --- | --- | --- | --- |
-| s0-tv.png | Splash | not measured, code uses >= 44 sp | PASS | PASS | no buttons | Visual PASS. Large title, centered. |
-| s1-tv-code.png | Pairing: QR + number | not measured, code uses >= 44 sp | PASS | FAIL (web address wraps, ".net" alone on a line) | no buttons | FAIL. Shows a raw web address (`dh3aa2spgh07i.cloudfront.net`): a tech word a user can see, and it breaks across two lines. |
-| s1-tv-connected.png | Connected | not measured, code uses >= 44 sp | PASS | PASS | no buttons | Visual PASS. |
-| s2-tv-figure.png | Live mirror (stick figure) | PASS (live layout, 94 px) | PASS | PASS | no buttons | Header sits ~75 px from top, ok. |
-| s4-1-safety.png | First-run safety | PASS (safety, 112 px) | PASS | PASS | visible (I understand) | |
-| s4-2-home.png | Home | PASS (home, 94 px) | PASS | PASS | visible (Start today's 10 minutes) | Start label wraps to two lines, not clipped. |
-| s4-3-intro.png | Move intro: sit to stand | PASS (intro, 94 px) | PASS | PASS | visible (I'm ready) | |
-| s4-4-live.png | Live set | PASS (live, 94 px) | PASS | PASS | no buttons | |
-| s4-5-rest.png | Rest | PASS (rest, 112 px) | PASS | PASS | visible (Skip rest) | |
-| s4-6-intro-heel.png | Move intro: heel raises | PASS (intro, 94 px) | PASS | PASS | visible (I'm ready) | |
-| s4-7-live-heel.png | Live set: heel raises | PASS (live, 94 px) | PASS | PASS | no buttons | |
-| s4-8-finish.png | Finish (3 moves) | PASS (finish, 94 px) | PASS | PASS | visible (Back to start) | Totals wrap onto a second row, reads fine. |
-| s4-9-paused.png | Paused | PASS (paused, 112 px) | PASS | PASS | visible (OK) | Text is ~102 px from both side edges, just inside the 5% margin. |
-| s5-finish.png | Finish (full session) | PASS (finish, 94 px) | PASS | PASS | visible (Back to start) | Two ragged columns; long labels wrap ("Leg out to the side, right: 8"). Left text starts at x=97, right at the margin limit. Readable but busy. |
-| s5-intro-2.png | Move intro: leg out to the side | PASS (intro, 94 px) | PASS | PASS | visible (I'm ready) | Title wraps to two lines, fits. |
-| s5-intro-4.png | Move intro: march in place | PASS (intro, 94 px) | PASS | PASS | visible (I'm ready) | |
-| s5-intro-5.png | Move intro: foot in front | PASS (intro, 94 px) | PASS | PASS | visible (I'm ready) | |
-| s5-live-hold.png | Live set: hold timer | PASS (live, 94 px) | PASS | PASS | no buttons | |
-| s6-tv-week.png | This week + family QR | PASS (week, 94 px) | PASS | PASS | visible (Back to start) | Left column is tightly packed; button ~30 px under last line. Left text at x=97, right caption ends ~100 px from edge. |
-| s8-tv-room.png | Move together: room | PASS (together, 94 px) | PASS | PASS | visible (Start together) | |
-| s8-tv-two-cameras.png | Move together: live, two figures | PASS (live layout, 94 px) | PASS | PASS | no buttons | "You" / "Ana" labels end ~17 px above the cue panel: tight, not touching. |
-| s8-tv-two-figures.png | Move together: live, two figures | PASS (live layout, 94 px) | PASS | PASS | no buttons | Same tight label spacing. |
-| s9-calibrate.png | Calibration retry | PASS (calibrate, 96 px) | PASS | PASS | visible (Skip) | |
-| s9-chair-1-question.png | Chair stand: question | PASS (chair-ask, 103 px) | PASS | PASS | visible (Yes) | |
-| s9-chair-2-about.png | Chair stand: age and sex | PASS (chair-about, 94 px) | PASS | PASS | visible (Sex: Woman) | Heading wraps ("score." alone on line 2). |
-| s9-chair-3-how.png | Chair stand: how to | PASS (chair-how, 103 px) | PASS | PASS | visible (I'm ready) | Six lines of text, dense but readable; bottom margin ~87 px. |
-| s9-chair-4-go.png | Chair stand: timed run | PASS (chair-go, 103 px) | PASS | PASS | no buttons | |
-| s9-chair-5-result.png | Chair stand: result | PASS (chair-result, 94 px) | PASS | PASS | visible (Back to start) | Four-line message, "age." orphaned on its own line. Contains "CDC" (acronym, not on the SPEC's cited-source list as a chair-stand norm) and "below average": see problems. |
-| s9-chair-no.png | Chair stand: declined | PASS (chair-no, 112 px) | PASS | PASS | visible (Back to start) | |
-| s9-finish.png | Finish (one move) | PASS (finish, 94 px) | PASS | PASS | visible (Back to start) | |
-| s9-home-grid.png | Home (four buttons) | PASS (home, 94 px) | PASS | PASS | visible (Start today's 10 minutes) | |
-| s9-live-midset.png | Live set mid-set with cue | PASS (live, 94 px) | PASS | PASS | no buttons | |
+| File | Screen | Text size | Contrast | Clipping | Focus ring | Tech words / addresses | Note |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| s0-tv.png | Splash | PASS (title about 130 px, tagline about 90 px) | PASS | PASS | n/a | PASS | Not in text-sizes.json; judged from image. |
+| s1-tv-code.png | Pairing | PASS (about 90 px lines, number about 170 px) | PASS (QR is black on white) | PASS | n/a | PASS | Shows only a QR and a 6-number code (691 116). No web address. |
+| s1-tv-connected.png | Connected | PASS | PASS | PASS | n/a | PASS | Judged from image. |
+| s2-tv-figure.png | Live set, mirror | PASS (smallest line 94 px) | PASS | PASS | n/a | PASS | Cue line pale blue on dark card. Progress bar track about 3.5:1 on the background. |
+| s4-1-safety.png | First-run safety | PASS (112 px button) | PASS | PASS | PASS (one white ring) | PASS | Doctor line white, chair line yellow. |
+| s4-2-home.png | Home | PASS (94 px) | PASS | PASS | PASS (ring on "Start today's 10 minutes") | PASS | Three other buttons are unfocused. "Start today's 10 minutes" wraps to 2 lines but fits. |
+| s4-3-intro.png | Move intro | PASS (94 px) | PASS | PASS | PASS | PASS | "Hold the back of the chair." is in yellow. |
+| s4-4-live.png | Live set, cue | PASS | PASS | PASS | n/a | PASS | Big yellow cue "Keep knees over toes". |
+| s4-5-rest.png | Rest | PASS (112 px) | PASS | PASS | PASS (Skip rest) | PASS | |
+| s4-6-intro-heel.png | Move intro | PASS | PASS | PASS | PASS | PASS | |
+| s4-7-live-heel.png | Live set | PASS | PASS | PASS | n/a | PASS | |
+| s4-8-finish.png | Finish | PASS (94 px) | PASS | PASS | PASS (Back to start) | PASS | Totals wrap into 2 columns, 2 rows. Readable. |
+| s4-9-paused.png | Paused | PASS (112 px) | PASS | PASS | PASS (OK) | PASS | "Paused. Press OK when you're ready." (6 words) wraps to 2 lines. |
+| s5-finish.png | Finish, ten sets | PASS (94 px) | PASS | WARN | PASS | PASS | Two columns with long names wrap unevenly: "Leg out to the side, right: 8" and "Foot in front (seconds): 40" split over 2 to 3 lines. Nothing is cut off, but it is hard to scan. |
+| s5-intro-2.png | Move intro, leg left | PASS | PASS | PASS | PASS | PASS | Title wraps to 2 lines. Button bottom at 960 px, inside the safe area. |
+| s5-intro-4.png | Move intro, march | PASS | PASS | PASS | PASS | PASS | |
+| s5-intro-5.png | Move intro, foot in front | PASS | PASS | PASS | PASS | PASS | |
+| s5-live-hold.png | Live hold timer | PASS | PASS | PASS | n/a | PASS | "of 20 seconds". |
+| s6-tv-week.png | This week | PASS (94 px) | PASS | PASS | PASS (Back to start) | PASS | Family QR with "Family can scan this." No address shown. |
+| s8-tv-room.png | Move together lobby | PASS (94 px) | PASS | PASS | PASS (Start together) | PASS | QR plus a 6-number code. "Ana is here." in green. |
+| s8-tv-two-cameras.png | Together live | PASS | PASS | PASS | n/a | PASS | "You" and "Ana" labels sit about 19 px above the cue card. Tight but not touching. |
+| s8-tv-two-figures.png | Together live | PASS | PASS | PASS | n/a | PASS | Same label gap. Figures are small (feet at about 650 px), but they are only a picture. |
+| s9-calibrate.png | Calibrate | PASS (Skip 96 px) | PASS | PASS | PASS (Skip) | PASS | Skip is the smallest button but is clearly labelled and ringed. |
+| s9-chair-1-question.png | Chair check question | PASS (103 px) | PASS | PASS | PASS (Yes) | PASS | Yes and No both have labels. The question is 11 words. |
+| s9-chair-2-about.png | Chair check, about you | PASS (94 px, narrowest margin) | PASS | PASS | PASS (Sex: Woman) | PASS | "Press OK to change a choice." is about 40.3 sp. It passes with no margin. |
+| s9-chair-3-how.png | Chair check, how | PASS (103 px) | PASS | PASS | PASS (I'm ready) | PASS | Six short lines, each 9 words or fewer. Dense but fits. |
+| s9-chair-4-go.png | Chair check, timed | PASS (103 px) | PASS | PASS | n/a | PASS | Timer in yellow, count in green. |
+| s9-chair-5-result.png | Chair check, result | PASS (94 px) | PASS | PASS | PASS (Back to start) | WARN | "CDC lists under 11 as below average for your age." is a health benchmark. CDC is not one of the sources approved in the spec. See problem 1. Five lines of text with tight spacing. |
+| s9-chair-no.png | Chair check declined | PASS (112 px) | PASS | PASS | PASS | PASS | Friendly sentence. |
+| s9-finish.png | Finish | PASS (94 px) | PASS | PASS | PASS | PASS | |
+| s9-home-grid.png | Home, four buttons | PASS (94 px) | PASS | PASS | PASS (ring on first button) | PASS | Same as s4-2. |
+| s9-live-midset.png | Live set, mid-set | PASS | PASS | PASS | n/a | PASS | |
 
 ## Counts
 
-- 32 screenshots reviewed.
-- 29 fully PASS (all six checks).
-- 2 visual PASS but text size not measured (s0-tv, s1-tv-connected).
-- 1 FAIL (s1-tv-code).
+- Rows reviewed: 33.
+- Fully pass: 31.
+- WARN: 2 (`s5-finish.png`, `s9-chair-5-result.png`).
+- FAIL: 0.
 
 ## Real problems, most serious first
 
-1. **s1-tv-code.png: raw web address on the pairing screen.** `dh3aa2spgh07i.cloudfront.net` is a tech string the user can see (breaks the "no tech words" rule), it wraps with ".net" orphaned on its own line, and it is the busiest, least friendly line on the first screen Mom sees. Fix: hide it, or show a short friendly address on one line; keep QR + number.
-2. **s9-chair-5-result.png: wording and source.** The line "CDC lists under 11 as below average for your age" tells a possibly anxious user she is "below average", and the CDC chair-stand norm is not among the sources listed in SPEC.md ("cite these, nothing else"). The hard rule bars medical claims beyond quoting cited studies. Verify the cited number and consider softer wording. The text also wraps with "age." alone on a line and uses the acronym "CDC".
-3. **s5-finish.png: crowded two-column totals.** Long labels wrap ("Leg out to the side, right: 8", "Foot in front (seconds): 40"), and the two columns read in an odd order. Not a rule failure, but the busiest summary screen. A single column or shorter labels would read better.
-4. **s8-tv-two-cameras.png / s8-tv-two-figures.png: "You" and "Ana" labels sit about 17 px above the cue panel.** Close but not overlapping; a small gap increase would make it safer.
-5. **s9-chair-3-how.png: six stacked lines.** Passes every check, but is dense for one screen; it could be split across two.
-6. **Margins:** several screens put text 97-103 px from the left or right edge (s4-9-paused, s5-finish, s6-tv-week). That is inside the 96 px (5%) limit, with almost no spare room. Overscan on a real TV may crop it; a little more padding would help.
-7. **No buttons on live screens (s2, s4-4, s4-7, s5-live-hold, s8, s9-chair-4, s9-live-midset):** by design, but the user has no on-screen way out mid-set. Back on the remote is the only exit; confirm that works and is explained.
+1. **s9-chair-5-result: health claim not covered by the spec.** "CDC lists under 11 as below average for your age." compares a person to a benchmark. The project hard rule says no medical claims beyond quoting the cited studies. The CDC chair-stand score is not one of the five sources the spec allows. Fix: either add the CDC chair-stand source to the spec and README, or drop the line and keep "Share this number with your doctor." It is not a tech word or a layout problem, but it is the one item here that could cause real harm to the submission. The screen is also the densest one: five text lines with little space between them.
+2. **s5-finish: uneven wrapping of long move names.** In two columns, "Leg out to the side, right: 8" and "Foot in front (seconds): 40" wrap to 2 to 3 lines and the rows no longer line up. Nothing is clipped. Fix: use one column of 6 short lines, or shorten the names ("Side leg, right: 8", "Foot in front: 40 s").
+3. **Narrow text-size margin (minor).** Several screens have a smallest line at 94 px (about 40.3 sp): chair-about, chair-result, home, intro, live, finish, week and together. These pass but have no spare room. Any font change or a longer string could fall below 40 sp. Consider setting the floor at 44 sp (about 100 px) for body text.
+4. **Together screen label spacing (minor).** The "You" and "Ana" labels end about 19 px above the cue card in s8-tv-two-figures and s8-tv-two-cameras. This is tight against the card but readable. Add about 12 px of space under the labels.
+5. **Heavy instruction screen (minor).** s9-chair-3-how holds six lines at once. Fine for the stated criteria, but for a 72-year-old user it would be easier to split into two screens.
 
-No contrast failures, no clipped or squashed buttons, no missing labels, and exactly one visible focus ring on every screen with buttons.
+Not found: no raw web addresses on any screen (s1-tv-code shows only the QR and the 6-number code), no tech words, no label-less or clipped buttons, no screen with two focus rings or none where buttons exist. Limits: this review is by eye plus the measured file. I did not run code or measure exact contrast ratios.
