@@ -40,6 +40,8 @@
 
 **Final run (11:12-11:35):** `npm run verify` on main after the fresh screenshot review: one e2e failure, S6 "TV never showed intro:1" (the intermittent set-freeze described in docs/WAKE-UP.md); everything else passed. Earlier full runs on the same code (verify-pa6, the last green on the pairing-address branch, tree identical to main) were fully green: all slices PASS, S9 53, Lighthouse 100. Not diagnosed further: the stall is rare and needs relay-side message logging.
 
+**Green on the final state (12:05):** after the S6 stall run, I ran two stress probes on the same build (20 march sets, then 20 sets mixing all five moves, 40 sets in total): no stall. Then a full `npm run verify` on main (final code) exited 0: typecheck, 133 unit tests, e2e, Gradle, emulator, live Bedrock, Google Play services scan and Lighthouse (100) all PASS; slices S0 to S8 PASS and S9 PASS (53 checks). So the set-freeze described in docs/WAKE-UP.md is rare (about 1 full run in 4 hit it once) and was not reproduced in 40 consecutive sets.
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
