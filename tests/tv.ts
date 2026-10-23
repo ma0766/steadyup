@@ -49,6 +49,20 @@ export function tvFocused(): string[] {
   const xml = adb("exec-out", "cat", "/sdcard/ui.xml");
   return [...xml.matchAll(/<node [^>]*focused="true"[^>]*bounds="(\[[^"]+)"/g)].map((m) => m[1]).filter((b) => !b.startsWith("[0,0][1920,1080]"));
 }
+/**
+ * Measured text size: every text node's height from the UI tree. One line of 40 sp text at 320 dpi (80 px) is about 93 px
+ * tall (line height is ~1.17 x the font size), so any text node under 90 px is smaller than the 40 sp floor.
+ */
+export function tvSmallText(): string[] {
+  adb("shell", "uiautomator", "dump", "/sdcard/ui.xml");
+  const xml = adb("exec-out", "cat", "/sdcard/ui.xml");
+  const small: string[] = [];
+  for (const m of xml.matchAll(/<node [^>]*?text="([^"]+)"[^>]*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g)) {
+    const h = +m[5] - +m[3];
+    if (m[1].trim() && h < 90) small.push(`"${m[1]}" is ${h} px tall`);
+  }
+  return small;
+}
 // Screens with something to press: a focus ring must be on one of them, or the remote's OK press does nothing visible.
 const NEEDS_FOCUS = /^(safety|home|week|together|calibrate|chair-ask|chair-no|chair-about|chair-how|chair-result|paused|finish|intro:\d+|rest:\d+)$/;
 
@@ -58,6 +72,8 @@ export async function waitScreen(name: string, timeoutMs = 60_000): Promise<void
   while (Date.now() < end) {
     if (logcat("SteadyUpFlow").includes(`shown=${name}`)) {
       await sleep(700); // let the frame draw
+      const small = tvSmallText();
+      if (small.length) throw new Error(`text under the 40 sp floor on screen "${name}": ${small.join('; ')}`);
       if (NEEDS_FOCUS.test(name)) {
         let ok = false;
         for (let i = 0; i < 6 && !ok; i++) { ok = tvFocused().length > 0; if (!ok) await sleep(500); }
