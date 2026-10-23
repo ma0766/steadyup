@@ -8,7 +8,7 @@
 | S3 Rep engine: sit to stand | done | vitest web/src/engine/s3-sit-to-stand.test.ts: 10/10 reps exact (jitter, near/far scale), 0 when out of frame or legs hidden, knee cue fires on caving fixture and not on clean; e2e recorder page saves landmark JSON from the fake camera | S3 |
 | S4 Session flow on TV | done | e2e s4-session: scripted phone (Node ws; synthetic landmarks through the real sit-to-stand engine) drives a 3-move session on the emulator; screenshots docs/screens/s4-*.png (safety, home, intro, live, rest, finish, paused); TTS lines verified via logcat tag SteadyUpTts. Gradle S4SessionTest: machine, 5 s speech gate, plan caps, plain-words check. | S4 |
 | S5 All five moves | done | vitest s5-moves (34 tests incl. 15-seed jitter sweep): positive, negative, low-confidence per move + every cue; e2e s5-full-session: default ten-set plan (all five moves, both sides) completes on the emulator, time-compressed (docs/screens/s5-*.png, s5-session-totals.txt) | S5 |
-| S6 History and family page | not started | | |
+| S6 History and family page | done | e2e s6-history: finished session shows on the family page within 10 s of the finish screen (docs/screens/s6-family.png), TV This week screen with family QR (s6-tv-week.png), DynamoDB read by the test: only whitelisted count fields, zero items with landmark/pose attributes. Server unit: summary, streak, idempotent save, extra fields rejected. | S6 |
 | S7 AI weekly plan | not started | | |
 | S8 Move together | not started | | |
 | S9 Submission pack | not started | | |
@@ -43,6 +43,10 @@
 - S5: holds report whole seconds as `rep` count; the phone re-sends the latest count every second so a dropped message cannot strand the TV.
 - S5: Lambda relay reuses one API Gateway client per endpoint and retries transient DNS errors (new client per call caused getaddrinfo EBUSY under load, which dropped messages).
 - S5: tests/scriptedPhone.ts now plays all five moves through the real engines on synthetic frames.
+- S6: history goes TV -> HTTPS API (POST /sets, retried) rather than through the phone relay, so it works whatever the phone does. Schema is strict (zod .strict()): any extra field such as landmarks is rejected with 400, not stored.
+- S6: the household id is 32 random hex chars kept on the TV; it is the secret inside the family link (QR on the TV This week screen). No accounts.
+- S6: summary 'today' = later of the page's local date and the newest recorded day, so phone/TV time-zone differences never hide a session.
+- S6: sessions = distinct session ids with at least one finished set; sets are saved as they finish (partial sessions count).
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds

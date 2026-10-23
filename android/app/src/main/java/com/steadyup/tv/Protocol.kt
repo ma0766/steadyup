@@ -64,6 +64,15 @@ object Sentences {
     const val FINISH_TITLE = "Well done!"
     const val FINISH_OK = "Back to start"
     const val OF = "of"
+    const val HOME_WEEK = "This week"
+    const val WEEK_TITLE = "This week"
+    const val WEEK_NONE = "No sessions yet. Let's start."
+    const val WEEK_AGAIN = "Start again today."
+    const val WEEK_LAST = "Last time:"
+    const val WEEK_FAMILY = "Family can scan this."
+    const val WEEK_LOADING = "Getting your week…"
+    const val WEEK_PROBLEM = "We can't reach your week right now."
     val ALL = listOf(TRY_AGAIN, CONNECTING, SCAN, OR_TYPE, CONNECTED, PHONE_READY, LOST, SAFETY_1, SAFETY_2, SAFETY_OK,
-        HOME_HELLO, HOME_START, HOLD_CHAIR, INTRO_GO, STEP_BACK, PAUSED, REST, REST_SKIP, NEXT_UP, WELL_DONE, FINISH_TITLE, FINISH_OK, OF)
+        HOME_HELLO, HOME_START, HOLD_CHAIR, INTRO_GO, STEP_BACK, PAUSED, REST, REST_SKIP, NEXT_UP, WELL_DONE, FINISH_TITLE, FINISH_OK, OF,
+        HOME_WEEK, WEEK_TITLE, WEEK_NONE, WEEK_AGAIN, WEEK_LAST, WEEK_FAMILY, WEEK_LOADING, WEEK_PROBLEM)
 }

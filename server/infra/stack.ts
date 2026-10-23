@@ -5,7 +5,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
-import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { WebSocketLambdaIntegration, HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
@@ -35,6 +35,24 @@ export class SteadyUpStack extends cdk.Stack {
     });
     table.grantReadWriteData(wsFn);
 
+    // HTTP API: TV records finished sets (counts only); family page and TV read the weekly summary.
+    const apiFn = new NodejsFunction(this, "ApiHandler", {
+      entry: path.join(import.meta.dirname, "../src/api.ts"),
+      runtime: lambda.Runtime.NODEJS_22_X,
+      architecture: lambda.Architecture.ARM_64,
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(10),
+      environment: { TABLE: table.tableName },
+      bundling: { minify: true, externalModules: ["@aws-sdk/*"] },
+    });
+    table.grantReadWriteData(apiFn);
+    const httpApi = new apigw.HttpApi(this, "Api", {
+      corsPreflight: { allowOrigins: ["*"], allowMethods: [apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST], allowHeaders: ["content-type"] },
+    });
+    const apiInteg = new HttpLambdaIntegration("ApiInteg", apiFn);
+    httpApi.addRoutes({ path: "/sets", methods: [apigw.HttpMethod.POST], integration: apiInteg });
+    httpApi.addRoutes({ path: "/summary", methods: [apigw.HttpMethod.GET], integration: apiInteg });
+
     const integ = new WebSocketLambdaIntegration("Ws", wsFn);
     const wsApi = new apigw.WebSocketApi(this, "Socket", {
       connectRouteOptions: { integration: integ },
@@ -61,7 +79,7 @@ export class SteadyUpStack extends cdk.Stack {
     new s3deploy.BucketDeployment(this, "DeploySite", {
       sources: [
         s3deploy.Source.asset(path.join(import.meta.dirname, "../../web/dist")),
-        s3deploy.Source.jsonData("config.json", { wsUrl: stage.url }), // runtime config: the page reads it, no rebuild per deploy
+        s3deploy.Source.jsonData("config.json", { wsUrl: stage.url, apiUrl: httpApi.apiEndpoint }), // runtime config: the page reads it, no rebuild per deploy
       ],
       destinationBucket: bucket,
       distribution: cdn,
@@ -70,6 +88,7 @@ export class SteadyUpStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "WsUrl", { value: stage.url });
     new cdk.CfnOutput(this, "WebUrl", { value: `https://${cdn.distributionDomainName}` });
+    new cdk.CfnOutput(this, "ApiUrl", { value: httpApi.apiEndpoint });
     new cdk.CfnOutput(this, "TableName", { value: table.tableName });
   }
 }

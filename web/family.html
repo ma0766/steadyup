@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SteadyUp family</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 20px/1.45 system-ui, sans-serif; background: #101820; color: #fff; }
+  main { max-width: 520px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 32px; margin: 0 0 4px; }
+  .card { background: #1b2a38; border-radius: 16px; padding: 16px 20px; margin: 16px 0; }
+  .big { font-size: 34px; font-weight: 700; color: #7bdc8f; margin: 0; }
+  .sub { color: #bfd7ea; margin: 4px 0 0; }
+  .bars { display: flex; gap: 8px; align-items: flex-end; height: 96px; margin-top: 12px; }
+  .bar { flex: 1; text-align: center; font-size: 14px; color: #bfd7ea; }
+  .bar i { display: block; background: #5fa8d3; border-radius: 6px 6px 0 0; min-height: 4px; }
+  .bar i.on { background: #7bdc8f; }
+  #problem { color: #ffb4a2; }
+  ul { padding-left: 20px; margin: 8px 0 0; }
+  .hidden { display: none; }
+  small { color: #8fa9bd; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SteadyUp</h1>
+  <p class="sub">How this week is going.</p>
+  <p id="problem" role="status" class="hidden"></p>
+  <section id="content" class="hidden">
+    <div class="card"><p class="big" id="sessions"></p><p class="sub" id="compare"></p><div class="bars" id="bars" aria-label="Last seven days"></div></div>
+    <div class="card"><p class="big" id="streak"></p></div>
+    <div class="card"><p class="sub">Last time</p><ul id="last"></ul></div>
+    <div id="together" class="hidden"></div>
+  </section>
+  <p><small>Only counts are shared. Video never leaves the phone.</small></p>
+</main>
+<script type="module" src="./src/family.ts"></script>
+</body>
+</html>

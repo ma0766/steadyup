@@ -49,6 +49,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var speaker: TtsSpeaker
     private lateinit var gate: SpeechGate
     private lateinit var plan: List<PlanItem>
+    private val history = HistoryClient(BuildConfig.API_URL)
+    private lateinit var homeId: String
+    private var sessionId = "s0"
+    private var setIdx = 0
+    private var week by mutableStateOf<WeekState>(WeekState.Loading)
     private var setSeq = 0                  // numbers each set so the phone can ignore repeats of a start message
     private var activeMoveMsg: String? = null
     private var ticks = 0
@@ -59,6 +64,9 @@ class MainActivity : ComponentActivity() {
         // test hooks: adb shell am start ... --es plan "sit_to_stand:3,heel_raise:3" --ei restSec 2
         plan = intent.getStringExtra("plan")?.let { Catalog.parse(it) } ?: Catalog.defaultPlan()
         val restSec = intent.getIntExtra("restSec", 20)
+        // one random id per household; it is the secret inside the family link. `home` extra is a test hook.
+        homeId = intent.getStringExtra("home") ?: prefs.getString("home_id", null)
+            ?: java.util.UUID.randomUUID().toString().replace("-", "").also { prefs.edit().putString("home_id", it).apply() }
         machine = SessionMachine(plan, restSec, firstRun = !prefs.getBoolean("safety_done", false))
         screen = machine.screen
         speaker = TtsSpeaker(this)
@@ -100,7 +108,7 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(sessionVisible, screen.logName()) { if (sessionVisible) Log.i(FLOW, "shown=${screen.logName()}") } // test hook: screen is on the glass
             BackHandler(enabled = screen !is Screen.Home && screen !is Screen.Safety && pairing is PairingState.Connected) { dispatch(Ev.Back) }
             if (pairing !is PairingState.Connected || splash) PairScreen(pairing) { relay.start() }
-            else SessionScreen(screen, pose, plan, ::dispatch)
+            else SessionScreen(screen, pose, plan, week, WeekText.familyLink(BuildConfig.WEB_URL, homeId), ::dispatch)
         }
         relay.start()
         Log.i(FLOW, "screen=${screen.logName()}")
@@ -126,6 +134,18 @@ class MainActivity : ComponentActivity() {
                 relay.send(activeMoveMsg!!)
             }
             Fx.EndSet -> { activeMoveMsg = null; relay.send("""{"type":"state","state":"set-end"}""") }
+            Fx.SessionStart -> { sessionId = java.util.UUID.randomUUID().toString().replace("-", "").take(16); setIdx = 0 }
+            Fx.OpenWeek -> {
+                week = WeekState.Loading
+                history.fetchSummary(homeId, java.time.LocalDate.now().toString()) { st ->
+                    runOnUiThread { week = st; (st as? WeekState.Loaded)?.let { Log.i(FLOW, "week=sessions:${it.summary.weekSessions},streak:${it.summary.streak}") } }
+                }
+            }
+            is Fx.RecordSet -> history.recordSet(JSONObject()   // counts only: no body points exist on this path
+                .put("home", homeId).put("session", sessionId).put("idx", setIdx++).put("move", f.item.move)
+                .apply { f.item.side?.let { put("side", it) } }
+                .put("target", f.item.target).put("done", f.item.target).put("cues", f.cues)
+                .put("day", java.time.LocalDate.now().toString()).put("ts", System.currentTimeMillis()))
             Fx.SafetyDone -> getSharedPreferences("steadyup", MODE_PRIVATE).edit().putBoolean("safety_done", true).apply()
         }
     }
@@ -135,10 +155,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SessionScreen(screen: Screen, pose: PoseFrame?, plan: List<PlanItem>, dispatch: (Ev) -> Unit) {
+fun SessionScreen(screen: Screen, pose: PoseFrame?, plan: List<PlanItem>, week: WeekState, familyLink: String, dispatch: (Ev) -> Unit) {
     when (val s = screen) {
         Screen.Safety -> SafetyScreen { dispatch(Ev.Ok) }
-        Screen.Home -> HomeScreen { dispatch(Ev.Ok) }
+        Screen.Home -> HomeScreen({ dispatch(Ev.Ok) }, { dispatch(Ev.OpenWeek) })
+        Screen.Week -> WeekScreen(week, familyLink) { dispatch(Ev.Ok) }
         is Screen.Intro -> IntroScreen(plan[s.i]) { dispatch(Ev.Ok) }
         is Screen.Live -> LiveScreen(plan[s.i], s.count, s.cue, pose)
         is Screen.Paused -> PausedScreen { dispatch(Ev.Ok) }

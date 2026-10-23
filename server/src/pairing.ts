@@ -3,6 +3,7 @@
 // After pairing every other JSON message is relayed to the peer unchanged (relay = dumb pipe).
 import { z } from "zod";
 import { randomInt } from "node:crypto";
+import type { SetRec } from "./summary";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
 export const FRIENDLY = {
@@ -22,6 +23,8 @@ export interface Store {
   getConn(id: string): Promise<ConnRec | undefined>;
   putConn(rec: ConnRec): Promise<void>;
   delConn(id: string): Promise<void>;
+  putSet(home: string, rec: SetRec): Promise<void>;                  // idempotent: same session+idx overwrites
+  listSets(home: string, fromDay: string, toDay: string): Promise<SetRec[]>;
 }
 export interface Deps {
   store: Store;

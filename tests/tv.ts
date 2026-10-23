@@ -50,3 +50,6 @@ export async function waitScreen(name: string, timeoutMs = 60_000): Promise<void
   }
   throw new Error(`TV never showed ${name}. Log:\n${logcat("SteadyUpFlow")}`);
 }
+
+/** Press a remote key by Android name, e.g. KEYCODE_DPAD_DOWN. */
+export const pressKey = (name: string) => adb("shell", "input", "keyevent", name);

@@ -1,7 +1,8 @@
 // DynamoDB-backed Store. Single table: pk = CODE#<code> | CONN#<id>, sk = "v". TTL attribute "ttl" (epoch s).
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import type { CodeRec, ConnRec, Store } from "./pairing";
+import type { SetRec } from "./summary";
 
 export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(new DynamoDBClient({}))): Store {
   const ttl = (secs: number) => Math.floor(Date.now() / 1000) + secs;
@@ -45,6 +46,21 @@ export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(
     },
     async delConn(id) {
       await client.send(new DeleteCommand({ TableName: table, Key: { pk: `CONN#${id}`, sk: "v" } }));
+    },
+    // History: counts only. pk = HOME#<id>, sk = SET#<day>#<session>#<idx> so a day range is one key-range query.
+    async putSet(home, r: SetRec) {
+      await client.send(new PutCommand({
+        TableName: table,
+        Item: { pk: `HOME#${home}`, sk: `SET#${r.day}#${r.session}#${String(r.idx).padStart(3, "0")}`, ...r, ttl: ttl(90 * 86400) },
+      }));
+    },
+    async listSets(home, from, to) {
+      const r = await client.send(new QueryCommand({
+        TableName: table, ConsistentRead: true,
+        KeyConditionExpression: "pk = :p AND sk BETWEEN :a AND :b",
+        ExpressionAttributeValues: { ":p": `HOME#${home}`, ":a": `SET#${from}`, ":b": `SET#${to}~` },
+      }));
+      return (r.Items ?? []).map(({ session, idx, move, side, target, done, cues, day, ts }) => ({ session, idx, move, side, target, done, cues, day, ts })) as SetRec[];
     },
   };
 }

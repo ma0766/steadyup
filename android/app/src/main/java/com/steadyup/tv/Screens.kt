@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,16 +15,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -42,12 +48,18 @@ object Ink {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun BigButton(label: String, onClick: () -> Unit) {
+fun BigButton(label: String, onClick: () -> Unit, autoFocus: Boolean = true) {
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() } // the remote's OK press lands here with no arrow keys needed
+    var focused by remember { mutableStateOf(false) }
+    // The remote's OK press must land on this button with no arrow keys. Focus can fail while the screen is still
+    // being laid out, so keep asking (up to ~3 s) until it sticks.
+    LaunchedEffect(Unit) {
+        if (!autoFocus) return@LaunchedEffect
+        repeat(30) { if (!focused) { runCatching { focus.requestFocus() }; delay(100) } }
+    }
     Surface(
         onClick = onClick,
-        modifier = Modifier.focusRequester(focus),
+        modifier = Modifier.focusRequester(focus).onFocusChanged { focused = it.isFocused },
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(20.dp)),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Ink.button, contentColor = Ink.bg,
@@ -80,11 +92,45 @@ fun SafetyScreen(onOk: () -> Unit) = Page {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun HomeScreen(onStart: () -> Unit) = Page {
+fun HomeScreen(onStart: () -> Unit, onWeek: () -> Unit) = Page {
     Text(AppInfo.NAME, fontSize = 72.sp, fontWeight = FontWeight.Bold, color = Ink.text)
     Text(Sentences.HOME_HELLO, fontSize = 48.sp, color = Ink.soft)
-    Spacer(Modifier.height(48.dp))
-    BigButton(Sentences.HOME_START, onStart)
+    Spacer(Modifier.height(40.dp))
+    BigButton(Sentences.HOME_START, onStart)           // first button has focus; arrow down reaches the next one
+    Spacer(Modifier.height(20.dp))
+    BigButton(Sentences.HOME_WEEK, onWeek, autoFocus = false)
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun WeekScreen(state: WeekState, familyLink: String, onBack: () -> Unit) = Page {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(Sentences.WEEK_TITLE, fontSize = 52.sp, fontWeight = FontWeight.Bold, color = Ink.text)
+            Spacer(Modifier.height(4.dp))
+            when (state) {
+                WeekState.Loading -> Text(Sentences.WEEK_LOADING, fontSize = 44.sp, color = Ink.soft)
+                WeekState.Failed -> Text(Sentences.WEEK_PROBLEM, fontSize = 44.sp, color = Ink.warn)
+                is WeekState.Loaded -> {
+                    Text(WeekText.sessions(state.summary), fontSize = 42.sp, color = Ink.good, fontWeight = FontWeight.Bold)
+                    Text(WeekText.streak(state.summary), fontSize = 40.sp, color = Ink.text)
+                    if (state.summary.last.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(Sentences.WEEK_LAST, fontSize = 40.sp, color = Ink.soft)
+                        for (line in state.summary.last.take(3)) Text(line, fontSize = 40.sp, color = Ink.text)
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            BigButton(Sentences.FINISH_OK, onBack)
+        }
+        Spacer(Modifier.width(32.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            QrView(familyLink, 260.dp)
+            Spacer(Modifier.height(12.dp))
+            Text(Sentences.WEEK_FAMILY, fontSize = 40.sp, color = Ink.soft, textAlign = TextAlign.Center)
+        }
+    }
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)

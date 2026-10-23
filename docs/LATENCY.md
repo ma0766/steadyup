@@ -1,5 +1,5 @@
 # Latency
 
-S2 latency phone->TV one-way estimate (RTT/2) over 177 frames: median 74 ms, p95 109 ms (target median < 200 ms)
+S2 latency phone->TV one-way estimate (RTT/2) over 178 frames: median 69 ms, p95 98 ms (target median < 200 ms)
 
 Method: the TV echoes the phone's timestamp; the phone halves the round trip. Deployed stack (CloudFront + API Gateway WebSocket + Lambda), emulator on the same Windows host as the browser.

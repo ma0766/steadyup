@@ -5,6 +5,7 @@ package com.steadyup.tv
 sealed class Screen {
     object Safety : Screen()
     object Home : Screen()
+    object Week : Screen()
     data class Intro(val i: Int) : Screen()
     data class Live(val i: Int, val count: Int, val cue: String?) : Screen()
     data class Paused(val i: Int, val count: Int) : Screen()
@@ -12,7 +13,7 @@ sealed class Screen {
     data class Finish(val totals: List<Pair<String, Int>>) : Screen()
 
     fun logName(): String = when (this) {
-        Safety -> "safety"; Home -> "home"
+        Safety -> "safety"; Home -> "home"; Week -> "week"
         is Intro -> "intro:$i"; is Live -> "live:$i"; is Paused -> "paused"
         is Rest -> "rest:$next"; is Finish -> "finish"
     }
@@ -20,6 +21,7 @@ sealed class Screen {
 
 sealed class Ev {
     object Ok : Ev()
+    object OpenWeek : Ev()
     object Back : Ev()
     data class Count(val value: Int) : Ev()
     data class Cue(val text: String) : Ev()
@@ -34,6 +36,9 @@ sealed class Fx {
     data class StartSet(val item: PlanItem) : Fx()
     object EndSet : Fx()
     object SafetyDone : Fx()
+    object SessionStart : Fx()
+    object OpenWeek : Fx()
+    data class RecordSet(val item: PlanItem, val cues: Int) : Fx()
 }
 
 class SessionMachine(
@@ -50,6 +55,7 @@ class SessionMachine(
     private var total = 0                      // base + what the phone has counted since the set started
     private var outSince: Long? = null         // when the person left view (null = in view)
     private var cueUntil = 0L
+    private var cuesInSet = 0
     private var restEnd = 0L
     private val done = LinkedHashMap<String, Int>() // title -> reps/seconds done, for the finish screen
 
@@ -61,13 +67,15 @@ class SessionMachine(
         when (ev) {
             Ev.Ok -> when (s) {
                 Screen.Safety -> { screen = Screen.Home; fx += Fx.SafetyDone }
-                Screen.Home -> { done.clear(); enterIntro(0, fx) }
+                Screen.Home -> { done.clear(); fx += Fx.SessionStart; enterIntro(0, fx) }
+                Screen.Week -> screen = Screen.Home
                 is Screen.Intro -> { startSet(s.i, 0, fx) }
                 is Screen.Paused -> { base = s.count; startSet(s.i, s.count, fx) }
                 is Screen.Rest -> enterIntro(s.next, fx)   // skip the rest
                 is Screen.Finish -> screen = Screen.Home
                 is Screen.Live -> {}
             }
+            Ev.OpenWeek -> if (s is Screen.Home) { screen = Screen.Week; fx += Fx.OpenWeek }
             Ev.Back -> if (s !is Screen.Home && s !is Screen.Safety) {
                 if (s is Screen.Live || s is Screen.Paused) fx += Fx.EndSet
                 screen = Screen.Home
@@ -78,7 +86,7 @@ class SessionMachine(
                 if (total >= it.target) finishSet(s.i, it, now, fx) else screen = s.copy(count = total)
             }
             is Ev.Cue -> if (s is Screen.Live) {
-                screen = s.copy(cue = ev.text); cueUntil = now + cueShowMs
+                screen = s.copy(cue = ev.text); cueUntil = now + cueShowMs; cuesInSet++
                 fx += Fx.Speak(ev.text)
             }
             Ev.OutOfView -> if (s is Screen.Live && outSince == null) {
@@ -112,12 +120,14 @@ class SessionMachine(
 
     private fun startSet(i: Int, startCount: Int, fx: MutableList<Fx>) {
         base = startCount; total = startCount; outSince = null; cueUntil = 0
+        if (startCount == 0) cuesInSet = 0
         screen = Screen.Live(i, startCount, null)
         fx += Fx.StartSet(plan[i])
     }
 
     private fun finishSet(i: Int, it: PlanItem, now: Long, fx: MutableList<Fx>) {
         fx += Fx.EndSet
+        fx += Fx.RecordSet(it, cuesInSet)
         val label = if (it.isHold) "${it.title} (seconds)" else it.title
         done[label] = (done[label] ?: 0) + it.target
         base = 0; total = 0

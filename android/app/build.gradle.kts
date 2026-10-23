@@ -21,6 +21,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("String", "WS_URL", "\"${endpoints["wsUrl"] ?: ""}\"")
+        buildConfigField("String", "API_URL", "\"${endpoints["apiUrl"] ?: ""}\"")
         buildConfigField("String", "WEB_URL", "\"${endpoints["webUrl"] ?: ""}\"")
     }
     buildFeatures { compose = true; buildConfig = true }
