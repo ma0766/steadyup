@@ -1,6 +1,8 @@
 package com.steadyup.tv
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,13 +34,25 @@ import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private var state by mutableStateOf<PairingState>(PairingState.Connecting)
+    private var pose by mutableStateOf<PoseFrame?>(null)
+    private val smoother = PoseSmoother()
+    private var poseCount = 0
+    private val handler = Handler(Looper.getMainLooper())
+    private val clearPose = Runnable { pose = null; smoother.reset() } // no body points for 2.5 s: back to the plain screen
     private lateinit var relay: RelayClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         relay = RelayClient(
             BuildConfig.WS_URL,
-            onMessage = { msg ->
+            onMessage = msgHandler@{ msg ->
+                if (msg is ServerMsg.Pose) {
+                    relay.send("""{"type":"ack","t":${msg.t}}""") // echo the phone's timestamp so it can measure round trip
+                    pose = smoother.update(msg.frame)
+                    if (++poseCount % 20 == 1) Log.i("SteadyUpMirror", "poses=$poseCount")
+                    handler.removeCallbacks(clearPose); handler.postDelayed(clearPose, 2500)
+                    return@msgHandler
+                }
                 state = PairingReducer.reduce(state, msg)
                 when (val s = state) {
                     is PairingState.ShowCode -> Log.i(RelayClient.TAG, "code=${s.code}") // test hook: read via adb logcat
@@ -49,7 +63,7 @@ class MainActivity : ComponentActivity() {
             },
             onLost = { state = PairingReducer.connectionLost(state) },
         )
-        setContent { PairScreen(state) { relay.start() } }
+        setContent { PairScreen(state, pose) { relay.start() } }
         relay.start()
     }
 
@@ -58,7 +72,9 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun PairScreen(state: PairingState, restart: () -> Unit) {
+fun PairScreen(state: PairingState, pose: PoseFrame?, restart: () -> Unit) {
+    // Mirror: once the phone sends body points, the figure takes over the whole screen.
+    if (state is PairingState.Connected && pose != null) { StickFigure(pose, Modifier.fillMaxSize().background(Color(0xFF101820))); return }
     // Ask for a fresh number a little before the old one runs out, and retry after a problem.
     LaunchedEffect(state) {
         when (state) {

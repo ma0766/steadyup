@@ -6,7 +6,9 @@ export type PairEvent =
 
 export const CONNECTION_PROBLEM = "We lost the connection. Please try again.";
 
-export function joinTv(wsUrl: string, code: string, on: (e: PairEvent) => void): { send: (o: unknown) => void; close: () => void } {
+export type Link = { send: (o: unknown) => void; close: () => void };
+
+export function joinTv(wsUrl: string, code: string, on: (e: PairEvent) => void): Link {
   const ws = new WebSocket(wsUrl);
   let paired = false;
   ws.onopen = () => ws.send(JSON.stringify({ type: "join", code }));

@@ -14,3 +14,6 @@ playwright-report
 android/.kotlin
 *.iml
 cdk-outputs.json
+web/public/mediapipe
+web/public/models
+fixtures/*.webm

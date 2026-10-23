@@ -14,6 +14,9 @@ const step = (name, ok, note = "") => { steps.push({ name, ok, note }); };
 
 fs.mkdirSync("test-results", { recursive: true });
 
+// 0 fixtures (fake-camera video), downloaded once
+sh("node", ["scripts/make-fixtures.mjs"]);
+
 // 1 typecheck (our lint)
 step("typecheck", sh("npm", ["run", "typecheck", "--silent"]).status === 0);
 

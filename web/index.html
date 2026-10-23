@@ -14,6 +14,7 @@
   #status { margin-top: 16px; font-size: 22px; min-height: 2em; }
   #status.ok { color: #7bdc8f; font-weight: 700; }
   #status.bad { color: #ffb4a2; }
+  #preview { width: 160px; border-radius: 12px; transform: scaleX(-1); background: #000; }
   .hidden { display: none; }
 </style>
 </head>
@@ -24,6 +25,10 @@
     <p>Type the 6 numbers from your TV.</p>
     <input id="code" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Number from your TV" />
     <button id="joinBtn" type="button">Join</button>
+  </section>
+  <section id="live" class="hidden">
+    <video id="preview" playsinline muted></video>
+    <p id="seen">Looking for you…</p>
   </section>
   <p id="status" role="status">Ready.</p>
 </main>

@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | S0 Walking skeleton | done | `npm run verify` exit 0, S0 PASS (7 checks); docs/screens/s0-tv.png, s0-phone.png; deployed WS echo + HTTPS page e2e | S0 |
 | S1 Pairing | done | `npm run verify` exit 0: S1 PASS (server unit: code, join, expired, reused, dead TV; Gradle reducer tests; e2e: Playwright phone joins with code read from adb logcat, TV screenshots docs/screens/s1-tv-code.png, s1-tv-connected.png) | S1 |
-| S2 Live mirror | not started | | |
+| S2 Live mirror | done | e2e: fake-camera y4m (real person) -> MediaPipe on phone page -> deployed relay -> TV figure (docs/screens/s2-tv-figure.png, two shots differ). Median phone->TV latency 82-85 ms, p95 ~110 ms (docs/LATENCY.md). Gradle S2MirrorTest (parse, smoother, mirror). | S2 |
 | S3 Rep engine: sit to stand | not started | | |
 | S4 Session flow on TV | not started | | |
 | S5 All five moves | not started | | |
@@ -28,6 +28,10 @@
 - S1: TV pairing code is read by tests with `adb logcat -s SteadyUpPair` (no test endpoint). Phone page reads wsUrl from ./config.json (written by CDK, no rebuild per deploy).
 - S1: join refuses a TV that already disconnected without burning the code; codes use crypto.randomInt; relay conn reads are consistent.
 - S1: TV never shows OK-button text; it refreshes the number itself.
+- S2: MediaPipe `@mediapipe/tasks-vision` pinned 1.1.1; wasm copied from node_modules and lite model downloaded at build (web/scripts/prepare-assets.mjs, gitignored). GPU delegate with CPU fallback; tests force `?delegate=cpu`.
+- S2: fake-camera fixture is a CC BY 3.0 back-view squat video from Wikimedia (docs/FIXTURES.md); no front-view chair-stand video found, so S3+ use synthetic landmark streams, labelled as such.
+- S2: TV mirrors x (person's right = screen right), EMA smoothing alpha 0.55, figure clears after 2.5 s without points.
+- S2: e2e phones are closed after each test (tests/phone.ts); leaked camera pages starved CPU and made the next test flaky.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds

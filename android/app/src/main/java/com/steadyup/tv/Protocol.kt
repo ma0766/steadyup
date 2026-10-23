@@ -9,6 +9,7 @@ sealed class ServerMsg {
     object PeerLeft : ServerMsg()
     data class Error(val message: String) : ServerMsg()
     data class Other(val type: String, val raw: JSONObject) : ServerMsg()
+    data class Pose(val t: Long, val frame: PoseFrame) : ServerMsg()
     object Unreadable : ServerMsg()
 
     companion object {
@@ -18,6 +19,7 @@ sealed class ServerMsg {
                 "code" -> Code(o.getString("code"), o.optInt("expiresInSec", 600))
                 "paired" -> Paired
                 "peer-left" -> PeerLeft
+                "pose" -> PoseCodec.fromWire(o.getJSONArray("p"))?.let { Pose(o.optLong("t"), it) } ?: Unreadable
                 "error" -> Error(o.optString("message", Sentences.TRY_AGAIN))
                 else -> Other(t, o)
             }
