@@ -1,5 +1,7 @@
 # TV screenshot accessibility review
 
+> Final state: reviewed by a fresh reviewer after the last UI fixes (29 PASS, 3 BORDERLINE, 0 FAIL). Two things were changed after it: the rest and finish screenshots now photograph the right screen, and the three borderline secondary lines on the pairing and week screens went from 40 sp to 44 sp. Text size is also MEASURED on the running app: the e2e tests fail if any text node on any screen is under 90 px tall (a 40 sp line is about 93 px). Everything in `docs/screens/` came from the last green `npm run verify` on `main`.
+
 Method: each PNG (1920x1080, 320 dpi, so 40 sp = 80 px) was viewed. Sizes are estimates from glyph heights read off the image (capital height is about 0.71 of font size, so 80 px = about 57 px cap height), error about +/- 4 px. Contrast was judged from the visible colours: white, light blue, yellow and green text on near-black navy; dark navy text on blue or light-blue buttons. All pairs I saw are well above 4.5:1 (roughly 6.5:1 for dark text on the unfocused blue button, 12:1 or more elsewhere). The grey progress track is about 3.5:1 against the background, which is fine for a non-text shape. No text was clipped or overlapping in any screenshot.
 
 Verdict rule: PASS = smallest text estimated at 86 px or more. BORDERLINE = smallest text within about 4 px of 80. FAIL = clearly under 80. Nothing is FAIL.

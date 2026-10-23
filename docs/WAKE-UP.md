@@ -4,7 +4,8 @@ Plain words. Everything here was checked by running it.
 
 ## Where things stand
 
-- **Main is updated and green.** I merged `worldclass` into `main` after `npm run verify` exited 0 (every slice PASS, and the new S9 "world-class" slice with 53 checks). I deployed the main stack (same address as before: https://dh3aa2spgh07i.cloudfront.net), re-ran the S0 check against it (pass), and installed the new APK on the emulator. Tagged **submission-v2**.
+- **Main is updated and green, and verify was re-run on main itself.** The last full `npm run verify` on `main` (merged code, against the main stack) exited 0: every slice PASS, S9 53 checks, Lighthouse 100 on the main URL, rate-limit test included.
+- **Details of the merge:** I merged `worldclass` into `main` after `npm run verify` exited 0 (every slice PASS, and the new S9 "world-class" slice with 53 checks). I deployed the main stack (same address as before: https://dh3aa2spgh07i.cloudfront.net), re-ran the S0 check against it (pass), and installed the new APK on the emulator. Tagged **submission-v2**.
 - **Your safe copy is `submission-v1`.** To go back to exactly what you had at midnight: `git checkout submission-v1` (the cloud address never changed, so nothing else needs undoing). To put the old code back on the cloud, check out that tag and run `npm run deploy`.
 - I tested everything first on a separate copy in the cloud (`SteadyUp-wc`). It is still there and costs nothing while idle. Delete it any time: `cd server && npx cdk destroy SteadyUp-wc -c stage=wc`.
 
