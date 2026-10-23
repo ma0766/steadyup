@@ -1,31 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm *)",
-      "Bash(npx *)",
-      "Bash(node *)",
-      "Bash(git *)",
-      "Bash(gh *)",
-      "Bash(aws *)",
-      "Bash(cdk *)",
-      "Bash(adb *)",
-      "Bash(emulator *)",
-      "Bash(./gradlew *)",
-      "Bash(android/gradlew *)",
-      "Bash(ffmpeg *)",
-      "Bash(docker *)",
-      "Bash(curl *)",
-      "Bash(ls *)",
-      "Bash(cat *)",
-      "Bash(mkdir *)"
+      "Bash(npm *)", "Bash(npx *)", "Bash(node *)", "Bash(git *)", "Bash(gh *)",
+      "Bash(aws *)", "Bash(cdk *)", "Bash(docker *)", "Bash(curl *)", "Bash(ls *)",
+      "Bash(cat *)", "Bash(mkdir *)", "Bash(tar *)", "Bash(unzip *)", "Bash(ffmpeg *)",
+      "Bash(wslpath *)", "Bash(java *)", "Bash(sdkmanager *)",
+      "Bash(./gradlew *)", "Bash(android/gradlew *)",
+      "Bash(/mnt/c/Users/angep/AppData/Local/Android/Sdk/platform-tools/adb.exe *)",
+      "Bash(\"$ADB\" *)", "Bash(source *)", "Bash(bash scripts/*)"
     ],
     "deny": [
-      "Bash(git push --force*)",
-      "Bash(git reset --hard*)",
-      "Bash(aws iam *)",
-      "Bash(aws organizations *)",
-      "Read(./.env)",
-      "Read(./.env.*)"
+      "Bash(git push --force*)", "Bash(git reset --hard*)",
+      "Bash(aws iam *)", "Bash(aws organizations *)",
+      "Read(./.env)", "Read(./.env.*)"
     ]
   }
 }

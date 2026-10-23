@@ -17,9 +17,11 @@ Fire TV balance and strength coach for older adults. The phone is the camera (po
 
 ## Environment
 
-- Windows, run from Git Bash. Android Studio is installed; the Android TV emulator (API 30, 1080p) should already be running. Find the SDK at `%LOCALAPPDATA%\Android\Sdk`; use its `platform-tools/adb` and `emulator/emulator`. If no device shows in `adb devices`, start the first TV AVD with `emulator -avd <name> -no-snapshot-load` in the background and wait for boot.
-- Node 22, AWS CLI v2 logged in for us-east-1, Docker optional.
-- Build the APK with `android/gradlew assembleDebug`; install with `adb install -r`; screenshot with `adb exec-out screencap -p > docs/screens/<name>.png`.
+- **You run in Debian on WSL2** (project at /home/madman/steadyup). Node 22, AWS CLI (us-east-1), Docker and git are already here. Git pushes use SSH. No sudo: never use `sudo` or apt.
+- **Android build tools live in WSL, installed by you in S0 without sudo:** download Eclipse Temurin JDK 17 (Linux x64 tar.gz) into `~/tools/jdk17`; Android command-line tools into `~/android-sdk/cmdline-tools/latest`; then `sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"` and accept licenses (`yes | sdkmanager --licenses`). Write `export JAVA_HOME=...`, `ANDROID_HOME=~/android-sdk` and PATH lines to `scripts/env.sh` and source it in every npm script that builds Android.
+- **The emulator runs on Windows** (Android TV, API 30, 1080p, already running as emulator-5554). Use the Windows adb at `/mnt/c/Users/angep/AppData/Local/Android/Sdk/platform-tools/adb.exe`; save it as `ADB` in `scripts/env.sh`. Install: `"$ADB" install -r "$(wslpath -w android/app/build/outputs/apk/debug/app-debug.apk)"`. Screenshot: `"$ADB" exec-out screencap -p > docs/screens/<name>.png`. Launch: `"$ADB" shell am start -n <package>/<activity>`.
+- If `"$ADB" devices` shows nothing, log "emulator not running" under Blocked on user, keep building and testing everything else, and retry every slice.
+- The emulator reaches the deployed AWS URLs over the internet; don't rely on localhost between Windows and WSL for TV tests.
 
 ## Stack
 
