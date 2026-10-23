@@ -3,7 +3,7 @@ import { endpoints } from "../endpoints";
 import { ScriptedPhone } from "../scriptedPhone";
 import { tvCode, tvScreenshot, pressOk, waitScreen, logcat, sleep } from "../tv";
 
-const PLAN = ["--es", "plan", "sit_to_stand:3,heel_raise:3,march:3", "--ei", "restSec", "5"];
+const PLAN = ["--es", "plan", "sit_to_stand:3,heel_raise:3,march:3", "--ei", "restSec", "10"];
 let phone: ScriptedPhone | undefined;
 test.afterEach(() => { phone?.close(); phone = undefined; });
 
@@ -20,8 +20,10 @@ test("S4 a scripted run completes a 3-move session with every screen", async () 
 
   await waitScreen("live:0");
   await expect.poll(() => logcat("SteadyUpTts"), { timeout: 30_000 }).toContain("say: Keep knees over toes");
+  await expect.poll(() => logcat("SteadyUpMirror"), { timeout: 20_000 }).toContain("poses="); // the figure is on screen
+  await sleep(800);
   tvScreenshot("s4-4-live");
-  await waitScreen("rest:1", 90_000); tvScreenshot("s4-5-rest");
+  await waitScreen("rest:1", 90_000, "s4-5-rest");
   await waitScreen("intro:1", 30_000); tvScreenshot("s4-6-intro-heel");
   pressOk();
   await waitScreen("live:1"); await sleep(1500); tvScreenshot("s4-7-live-heel");
@@ -29,7 +31,7 @@ test("S4 a scripted run completes a 3-move session with every screen", async () 
   pressOk(); // skip the rest with OK
   await waitScreen("intro:2", 15_000); pressOk();
   await waitScreen("live:2");
-  await waitScreen("finish", 90_000); tvScreenshot("s4-8-finish");
+  await waitScreen("finish", 90_000, "s4-8-finish");
 
   const flow = logcat("SteadyUpFlow");
   expect(flow).toContain("totals=Sit to stand:3,Heel raises:3,March in place:3");

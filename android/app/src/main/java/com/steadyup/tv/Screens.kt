@@ -156,7 +156,7 @@ fun WeekScreen(state: WeekState, familyLink: String, onBack: () -> Unit) = Page 
                     Text(WeekText.streak(state.summary), fontSize = 40.sp, color = Ink.text)
                     if (state.summary.last.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
-                        Text(Sentences.WEEK_LAST, fontSize = 40.sp, color = Ink.soft)
+                        Text(Sentences.WEEK_LAST, fontSize = 44.sp, color = Ink.soft)
                         for (line in state.summary.last.take(3)) Text(line, fontSize = 40.sp, color = Ink.text)
                     }
                 }
@@ -168,7 +168,7 @@ fun WeekScreen(state: WeekState, familyLink: String, onBack: () -> Unit) = Page 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             QrView(familyLink, 260.dp)
             Spacer(Modifier.height(12.dp))
-            Text(Sentences.WEEK_FAMILY, fontSize = 40.sp, color = Ink.soft, textAlign = TextAlign.Center)
+            Text(Sentences.WEEK_FAMILY, fontSize = 44.sp, color = Ink.soft, textAlign = TextAlign.Center)
         }
     }
 }

@@ -67,11 +67,12 @@ export function tvSmallText(): string[] {
 const NEEDS_FOCUS = /^(safety|home|week|together|calibrate|chair-ask|chair-no|chair-about|chair-how|chair-result|paused|finish|intro:\d+|rest:\d+)$/;
 
 /** Wait until the TV app logs that it is showing this screen (tag SteadyUpFlow). Screens with buttons must also show focus. */
-export async function waitScreen(name: string, timeoutMs = 60_000): Promise<void> {
+export async function waitScreen(name: string, timeoutMs = 60_000, shot?: string): Promise<void> {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     if (logcat("SteadyUpFlow").includes(`shown=${name}`)) {
-      await sleep(700); // let the frame draw
+      await sleep(shot ? 400 : 700); // let the frame draw
+      if (shot) tvScreenshot(shot); // photograph first: the focus and text-size checks below take a couple of seconds
       const small = tvSmallText();
       if (small.length) throw new Error(`text under the 40 sp floor on screen "${name}": ${small.join('; ')}`);
       if (NEEDS_FOCUS.test(name)) {

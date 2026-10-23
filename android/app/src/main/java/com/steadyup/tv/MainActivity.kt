@@ -252,7 +252,7 @@ fun PairScreen(state: PairingState, restart: () -> Unit) {
                 Column(Modifier.weight(1f)) {
                     Text(Sentences.SCAN, fontSize = 48.sp, color = Color.White)
                     Spacer(Modifier.height(32.dp))
-                    Text(Sentences.OR_TYPE, fontSize = 40.sp, color = Color(0xFFBFD7EA))
+                    Text(Sentences.OR_TYPE, fontSize = 44.sp, color = Color(0xFFBFD7EA))
                     Text(PairingReducer.spaced(state.code), fontSize = 80.sp, fontWeight = FontWeight.Bold, softWrap = false,
                         fontFamily = FontFamily.Monospace, color = Color.White)
                     Spacer(Modifier.height(16.dp))
