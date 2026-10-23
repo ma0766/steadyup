@@ -1,7 +1,7 @@
 // DynamoDB-backed Store. Single table: pk = CODE#<code> | CONN#<id>, sk = "v". TTL attribute "ttl" (epoch s).
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import type { CodeRec, ConnRec, Store } from "./pairing";
+import type { CodeRec, ConnRec, RoomRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
 import type { Plan } from "./plan";
 
@@ -53,6 +53,23 @@ export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(
       await client.send(new PutCommand({
         TableName: table,
         Item: { pk: `HOME#${home}`, sk: `SET#${r.day}#${r.session}#${String(r.idx).padStart(3, "0")}`, ...r, ttl: ttl(90 * 86400) },
+      }));
+    },
+    async putRoom(rec: RoomRec) {
+      try {
+        await client.send(new PutCommand({ TableName: table, Item: { pk: `ROOM#${rec.code}`, sk: "v", ...rec, ttl: ttl(3600) }, ConditionExpression: "attribute_not_exists(pk)" }));
+        return true;
+      } catch (e: any) { if (e.name === "ConditionalCheckFailedException") return false; throw e; }
+    },
+    async getRoom(code) {
+      const r = await client.send(new GetCommand({ TableName: table, Key: { pk: `ROOM#${code}`, sk: "v" }, ConsistentRead: true }));
+      return r.Item as RoomRec | undefined;
+    },
+    async addGuest(code, conn) {
+      await client.send(new UpdateCommand({
+        TableName: table, Key: { pk: `ROOM#${code}`, sk: "v" },
+        UpdateExpression: "SET guests = list_append(if_not_exists(guests, :e), :g)",
+        ExpressionAttributeValues: { ":e": [], ":g": [conn] },
       }));
     },
     async getPlan(home) {

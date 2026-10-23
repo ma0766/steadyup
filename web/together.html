@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SteadyUp together</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 20px/1.4 system-ui, sans-serif; background: #101820; color: #fff; }
+  main { max-width: 480px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 32px; margin: 0 0 8px; }
+  input { font: 28px system-ui; width: 100%; box-sizing: border-box; padding: 12px; text-align: center; border-radius: 12px; border: 3px solid #5fa8d3; background: #fff; color: #101820; margin-top: 8px; }
+  #code { font: 36px monospace; letter-spacing: 8px; }
+  button { font: 600 24px system-ui; width: 100%; margin-top: 16px; padding: 16px; border-radius: 12px; border: 0; background: #5fa8d3; color: #101820; }
+  #status { margin-top: 16px; font-size: 22px; min-height: 2em; }
+  #status.ok { color: #7bdc8f; font-weight: 700; }
+  #status.bad { color: #ffb4a2; }
+  #preview { width: 160px; border-radius: 12px; transform: scaleX(-1); background: #000; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Move together</h1>
+  <section id="join">
+    <p>Type your name and the 6 numbers on their TV.</p>
+    <input id="name" autocomplete="given-name" maxlength="16" placeholder="Your name" aria-label="Your name" />
+    <input id="code" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Number from the TV" />
+    <button id="joinBtn" type="button">Join</button>
+  </section>
+  <section id="live" class="hidden">
+    <video id="preview" playsinline muted></video>
+    <p id="seen">Looking for you…</p>
+    <p id="count" aria-label="Count" style="font-size:96px;margin:0;color:#7bdc8f">0</p>
+  </section>
+  <p id="status" role="status">Ready.</p>
+  <p><small style="color:#8fa9bd">Your camera stays on your phone. Only counts are shared.</small></p>
+</main>
+<script type="module" src="./src/together.ts"></script>
+</body>
+</html>

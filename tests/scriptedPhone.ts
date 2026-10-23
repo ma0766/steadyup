@@ -21,21 +21,24 @@ export class ScriptedPhone {
 
   constructor(private wsUrl: string) {}
 
-  join(code: string): Promise<void> {
+  /** Pair with the TV by number, or (with `hello`) join a Move together room as family. */
+  join(code: string, hello: object = { type: "join", code }): Promise<void> {
     this.ws = new WebSocket(this.wsUrl);
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("pairing timed out")), 20_000);
-      this.ws.on("open", () => this.send({ type: "join", code }));
+      this.ws.on("open", () => this.send(hello));
       this.ws.on("error", reject);
       this.ws.on("message", (raw) => {
         const m = JSON.parse(raw.toString());
-        if (m.type === "paired") { clearTimeout(t); resolve(); }
+        if (m.type === "paired" || m.type === "room-joined") { clearTimeout(t); resolve(); }
         else if (m.type === "error") { clearTimeout(t); reject(new Error(m.message)); }
         else if (m.type === "move") { if (m.seq !== undefined && m.seq === this.lastSeq) return; this.lastSeq = m.seq; console.log(`[phone] move ${m.move} ${m.side ?? ""} target ${m.target}`); this.moves.push(m.move); if (this.autoRun) void this.playSet(m.move, m.target, m.side ?? null); }
         else if (m.type === "state" && m.state === "set-end") this.runId++; // stop the current set
       });
     });
   }
+
+  joinRoom(code: string, name: string) { return this.join(code, { type: "room-join", code, name }); }
 
   send(o: unknown) { if (this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(o)); }
   outOfView() { this.send({ type: "state", state: "out-of-view" }); }

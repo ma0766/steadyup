@@ -1,4 +1,4 @@
-import type { CodeRec, ConnRec, Store } from "./pairing";
+import type { CodeRec, ConnRec, RoomRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
 import type { Plan } from "./plan";
 
@@ -8,6 +8,7 @@ export function memoryStore(): Store {
   const conns = new Map<string, ConnRec>();
   const sets = new Map<string, SetRec>();
   const plans = new Map<string, Plan>();
+  const rooms = new Map<string, RoomRec>();
   return {
     async putCode(r) { if (codes.has(r.code)) return false; codes.set(r.code, { ...r }); return true; },
     async getCode(c) { const r = codes.get(c); return r && { ...r }; },
@@ -20,6 +21,9 @@ export function memoryStore(): Store {
     async putConn(r) { conns.set(r.connId, { ...r }); },
     async delConn(id) { conns.delete(id); },
     async putSet(home, r) { sets.set(`${home}|${r.day}|${r.session}|${r.idx}`, { ...r }); },
+    async putRoom(r) { if (rooms.has(r.code)) return false; rooms.set(r.code, { ...r, guests: [...r.guests] }); return true; },
+    async getRoom(c) { const r = rooms.get(c); return r && { ...r, guests: [...r.guests] }; },
+    async addGuest(c, conn) { rooms.get(c)?.guests.push(conn); },
     async getPlan(home) { const p = plans.get(home); return p && JSON.parse(JSON.stringify(p)); },
     async putPlan(home, plan) { plans.set(home, JSON.parse(JSON.stringify(plan))); },
     async listSets(home, from, to) {

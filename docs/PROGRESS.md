@@ -10,7 +10,7 @@
 | S5 All five moves | done | vitest s5-moves (34 tests incl. 15-seed jitter sweep): positive, negative, low-confidence per move + every cue; e2e s5-full-session: default ten-set plan (all five moves, both sides) completes on the emulator, time-compressed (docs/screens/s5-*.png, s5-session-totals.txt) | S5 |
 | S6 History and family page | done | e2e s6-history: finished session shows on the family page within 10 s of the finish screen (docs/screens/s6-family.png), TV This week screen with family QR (s6-tv-week.png), DynamoDB read by the test: only whitelisted count fields, zero items with landmark/pose attributes. Server unit: summary, streak, idempotent save, extra fields rejected. | S6 |
 | S7 AI weekly plan | done | server/src/s7-plan.test.ts: mock model asking +10 reps/+10 s/+40 is capped to +2/+5/15/30 (sweep over every current value and ask), failures (throw, prose, wrong shape) keep the plan, plain-sentence guard; live smoke `node scripts/s7-smoke.mjs` PASS: real Bedrock plan via deployed API, valid and within caps; e2e s7-plan shows it on the family page | S7 |
-| S8 Move together | not started | | |
+| S8 Move together | done | e2e s8-together: (1) two scripted people through real engines: both labelled figures, separate reps, TV log together=6 for 3+3 (docs/screens/s8-tv-room.png, s8-tv-two-figures.png); (2) two fake-camera browser pages (Mom paired to the TV, Ana joined from her own phone page): TV shows both figures and a Together total (s8-tv-two-cameras.png). Server unit: rooms, tagging, broadcast, refusals. | S8 |
 | S9 Submission pack | not started | | |
 
 ## Decisions
@@ -51,6 +51,8 @@
 - S7: caps in code: +-2 reps, +-5 s, max 15 reps / 30 s, plus a floor of 4 reps / 10 s that never raises anyone already below it. Model sentence kept only if plain (under 12 words, no tech words), else code writes 'Let's try 10.'
 - S7: only a successful model call is stored; any failure returns the current plan unchanged.
 - S7: TV loads targets at start and after Finish; they land only between sessions (machine.updatePlan). A fixed `plan` test extra ignores them.
+- S8: Move together = a room on the host TV (6-digit number, 1 hour). Family joins from their own phone page (together.html) with their own camera, so one emulator is enough for the proof. The relay tags guest messages `guest:true,name` so the TV never mixes them with its own phone; the TV does not ack guest poses; the TV broadcasts each move/set-end to guests so their phone counts the same move.
+- S8: Together total = my finished reps + my live count + the guest's finished and live reps. Only body points and counts cross the relay; guests' video never leaves their phone. A second real TV joining a room is not built (the spec allowed one emulator with a split view).
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds

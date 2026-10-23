@@ -55,6 +55,14 @@ class MainActivity : ComponentActivity() {
     private var sessionId = "s0"
     private var setIdx = 0
     private var week by mutableStateOf<WeekState>(WeekState.Loading)
+    private var roomCode by mutableStateOf<String?>(null)
+    private var guestName by mutableStateOf<String?>(null)
+    private var guestPose by mutableStateOf<PoseFrame?>(null)
+    private val guestSmoother = PoseSmoother()
+    private var guestCount by mutableStateOf(0)
+    private var mineDone by mutableStateOf(0)       // my reps in finished sets
+    private var guestDone by mutableStateOf(0)      // the guest's reps in earlier sets (folded in when the next set starts)
+    private val clearGuestPose = Runnable { guestPose = null; guestSmoother.reset() }
     private var setSeq = 0                  // numbers each set so the phone can ignore repeats of a start message
     private var activeMoveMsg: String? = null
     private var ticks = 0
@@ -87,6 +95,20 @@ class MainActivity : ComponentActivity() {
                         handler.removeCallbacks(clearPose); handler.postDelayed(clearPose, 2500)
                         return@msgHandler
                     }
+                    is ServerMsg.FromGuest -> {
+                        when (val g = msg.inner) {
+                            is ServerMsg.Pose -> { guestPose = guestSmoother.update(g.frame); handler.removeCallbacks(clearGuestPose); handler.postDelayed(clearGuestPose, 2500) } // no ack: that is for our own phone
+                            is ServerMsg.Rep -> guestCount = g.count
+                            else -> {}
+                        }
+                        return@msgHandler
+                    }
+                    is ServerMsg.Room -> { roomCode = msg.code; Log.i(FLOW, "room=${msg.code}"); return@msgHandler }
+                    is ServerMsg.Guest -> {
+                        guestName = if (msg.joined) msg.name else null
+                        if (!msg.joined) { guestPose = null; guestSmoother.reset() }
+                        Log.i(FLOW, "guest=${if (msg.joined) msg.name else "none"}"); return@msgHandler
+                    }
                     is ServerMsg.Rep -> runOnUiThread { dispatch(Ev.Count(msg.count)) }
                     is ServerMsg.CueMsg -> runOnUiThread { dispatch(Ev.Cue(msg.text)) }
                     is ServerMsg.ViewState -> runOnUiThread { dispatch(if (msg.inView) Ev.InView else Ev.OutOfView) }
@@ -112,7 +134,13 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(sessionVisible, screen.logName()) { if (sessionVisible) Log.i(FLOW, "shown=${screen.logName()}") } // test hook: screen is on the glass
             BackHandler(enabled = screen !is Screen.Home && screen !is Screen.Safety && pairing is PairingState.Connected) { dispatch(Ev.Back) }
             if (pairing !is PairingState.Connected || splash) PairScreen(pairing) { relay.start() }
-            else SessionScreen(screen, pose, plan, week, WeekText.familyLink(BuildConfig.WEB_URL, homeId), ::dispatch)
+            else {
+                val live = screen as? Screen.Live
+                val together = guestName?.let { TogetherView(it, guestPose, mineDone + guestDone + (live?.count ?: 0) + guestCount) }
+                LaunchedEffect(together?.total) { together?.let { Log.i(FLOW, "together=${it.total}") } }
+                LaunchedEffect(live != null && pose != null && guestPose != null) { if (live != null && pose != null && guestPose != null) Log.i(FLOW, "figures=2") }
+                SessionScreen(screen, pose, plan, week, WeekText.familyLink(BuildConfig.WEB_URL, homeId), together, roomCode, "${BuildConfig.WEB_URL.trimEnd('/')}/together.html?room=${roomCode ?: ""}", ::dispatch)
+            }
         }
         relay.start()
         Log.i(FLOW, "screen=${screen.logName()}")
@@ -143,8 +171,14 @@ class MainActivity : ComponentActivity() {
                 activeMoveMsg = JSONObject().put("type", "move").put("move", f.item.move).put("target", f.item.target)
                     .put("side", f.item.side ?: JSONObject.NULL).put("seq", ++setSeq).toString()
                 relay.send(activeMoveMsg!!)
+                guestDone += guestCount; guestCount = 0
+                if (roomCode != null) relay.send(JSONObject().put("type", "room-broadcast").put("msg", JSONObject(activeMoveMsg!!)).toString())
             }
-            Fx.EndSet -> { activeMoveMsg = null; relay.send("""{"type":"state","state":"set-end"}""") }
+            Fx.EndSet -> {
+                activeMoveMsg = null; relay.send("""{"type":"state","state":"set-end"}""")
+                if (roomCode != null) relay.send("""{"type":"room-broadcast","msg":{"type":"state","state":"set-end"}}""")
+            }
+            Fx.OpenRoom -> { roomCode = null; guestName = null; guestPose = null; mineDone = 0; guestDone = 0; guestCount = 0; relay.send("""{"type":"room-open"}""") }
             Fx.SessionStart -> { sessionId = java.util.UUID.randomUUID().toString().replace("-", "").take(16); setIdx = 0 }
             Fx.OpenWeek -> {
                 week = WeekState.Loading
@@ -152,11 +186,11 @@ class MainActivity : ComponentActivity() {
                     runOnUiThread { week = st; (st as? WeekState.Loaded)?.let { Log.i(FLOW, "week=sessions:${it.summary.weekSessions},streak:${it.summary.streak}") } }
                 }
             }
-            is Fx.RecordSet -> history.recordSet(JSONObject()   // counts only: no body points exist on this path
+            is Fx.RecordSet -> { mineDone += f.item.target; history.recordSet(JSONObject()   // counts only: no body points exist on this path
                 .put("home", homeId).put("session", sessionId).put("idx", setIdx++).put("move", f.item.move)
                 .apply { f.item.side?.let { put("side", it) } }
                 .put("target", f.item.target).put("done", f.item.target).put("cues", f.cues)
-                .put("day", java.time.LocalDate.now().toString()).put("ts", System.currentTimeMillis()))
+                .put("day", java.time.LocalDate.now().toString()).put("ts", System.currentTimeMillis())) }
             Fx.SafetyDone -> getSharedPreferences("steadyup", MODE_PRIVATE).edit().putBoolean("safety_done", true).apply()
         }
     }
@@ -166,13 +200,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SessionScreen(screen: Screen, pose: PoseFrame?, plan: List<PlanItem>, week: WeekState, familyLink: String, dispatch: (Ev) -> Unit) {
+fun SessionScreen(screen: Screen, pose: PoseFrame?, plan: List<PlanItem>, week: WeekState, familyLink: String, together: TogetherView?, roomCode: String?, togetherLink: String, dispatch: (Ev) -> Unit) {
     when (val s = screen) {
         Screen.Safety -> SafetyScreen { dispatch(Ev.Ok) }
-        Screen.Home -> HomeScreen({ dispatch(Ev.Ok) }, { dispatch(Ev.OpenWeek) })
+        Screen.Home -> HomeScreen({ dispatch(Ev.Ok) }, { dispatch(Ev.OpenWeek) }, { dispatch(Ev.OpenTogether) })
+        Screen.Together -> TogetherScreen(roomCode, together?.name, togetherLink) { dispatch(Ev.Ok) }
         Screen.Week -> WeekScreen(week, familyLink) { dispatch(Ev.Ok) }
         is Screen.Intro -> IntroScreen(plan[s.i]) { dispatch(Ev.Ok) }
-        is Screen.Live -> LiveScreen(plan[s.i], s.count, s.cue, pose)
+        is Screen.Live -> LiveScreen(plan[s.i], s.count, s.cue, pose, together)
         is Screen.Paused -> PausedScreen { dispatch(Ev.Ok) }
         is Screen.Rest -> RestScreen(plan[s.next], s.secondsLeft) { dispatch(Ev.Ok) }
         is Screen.Finish -> FinishScreen(s.totals) { dispatch(Ev.Ok) }

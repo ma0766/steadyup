@@ -6,6 +6,7 @@ sealed class Screen {
     object Safety : Screen()
     object Home : Screen()
     object Week : Screen()
+    object Together : Screen()
     data class Intro(val i: Int) : Screen()
     data class Live(val i: Int, val count: Int, val cue: String?) : Screen()
     data class Paused(val i: Int, val count: Int) : Screen()
@@ -13,7 +14,7 @@ sealed class Screen {
     data class Finish(val totals: List<Pair<String, Int>>) : Screen()
 
     fun logName(): String = when (this) {
-        Safety -> "safety"; Home -> "home"; Week -> "week"
+        Safety -> "safety"; Home -> "home"; Week -> "week"; Together -> "together"
         is Intro -> "intro:$i"; is Live -> "live:$i"; is Paused -> "paused"
         is Rest -> "rest:$next"; is Finish -> "finish"
     }
@@ -22,6 +23,7 @@ sealed class Screen {
 sealed class Ev {
     object Ok : Ev()
     object OpenWeek : Ev()
+    object OpenTogether : Ev()
     object Back : Ev()
     data class Count(val value: Int) : Ev()
     data class Cue(val text: String) : Ev()
@@ -38,6 +40,7 @@ sealed class Fx {
     object SafetyDone : Fx()
     object SessionStart : Fx()
     object OpenWeek : Fx()
+    object OpenRoom : Fx()
     data class RecordSet(val item: PlanItem, val cues: Int) : Fx()
 }
 
@@ -52,7 +55,7 @@ class SessionMachine(
 
     /** New weekly targets only land between sessions, never under someone's feet mid-set. */
     fun updatePlan(newPlan: List<PlanItem>): Boolean {
-        if (screen !is Screen.Home && screen !is Screen.Week && screen !is Screen.Safety && screen !is Screen.Finish) return false
+        if (screen !is Screen.Home && screen !is Screen.Week && screen !is Screen.Together && screen !is Screen.Safety && screen !is Screen.Finish) return false
         plan = newPlan; return true
     }
 
@@ -77,12 +80,14 @@ class SessionMachine(
                 Screen.Safety -> { screen = Screen.Home; fx += Fx.SafetyDone }
                 Screen.Home -> { done.clear(); fx += Fx.SessionStart; enterIntro(0, fx) }
                 Screen.Week -> screen = Screen.Home
+                Screen.Together -> { done.clear(); fx += Fx.SessionStart; enterIntro(0, fx) }
                 is Screen.Intro -> { startSet(s.i, 0, fx) }
                 is Screen.Paused -> { base = s.count; startSet(s.i, s.count, fx) }
                 is Screen.Rest -> enterIntro(s.next, fx)   // skip the rest
                 is Screen.Finish -> screen = Screen.Home
                 is Screen.Live -> {}
             }
+            Ev.OpenTogether -> if (s is Screen.Home) { screen = Screen.Together; fx += Fx.OpenRoom }
             Ev.OpenWeek -> if (s is Screen.Home) { screen = Screen.Week; fx += Fx.OpenWeek }
             Ev.Back -> if (s !is Screen.Home && s !is Screen.Safety) {
                 if (s is Screen.Live || s is Screen.Paused) fx += Fx.EndSet

@@ -67,3 +67,32 @@ class S7PlanTargetsTest {
         assertEquals(false, m.updatePlan(Catalog.parse("sit_to_stand:9")))
     }
 }
+
+class S8TogetherTest {
+    @Test fun roomAndGuestMessagesParse() {
+        assertEquals(ServerMsg.Room("123456"), ServerMsg.parse("""{"type":"room","code":"123456"}"""))
+        assertEquals(ServerMsg.Guest("Ana", true), ServerMsg.parse("""{"type":"guest","event":"joined","name":"Ana"}"""))
+        assertEquals(ServerMsg.Guest("Ana", false), ServerMsg.parse("""{"type":"guest","event":"left","name":"Ana"}"""))
+    }
+
+    @Test fun guestTrafficIsTaggedSoItNeverCountsAsMine() {
+        val m = ServerMsg.parse("""{"type":"rep","move":"sit_to_stand","count":3,"guest":true,"name":"Ana"}""")
+        assertEquals(ServerMsg.FromGuest("Ana", ServerMsg.Rep("sit_to_stand", 3)), m)
+        val plain = ServerMsg.parse("""{"type":"rep","move":"sit_to_stand","count":3}""")
+        assertEquals(ServerMsg.Rep("sit_to_stand", 3), plain)
+    }
+
+    @Test fun togetherScreenOpensARoomAndOkStartsTheSession() {
+        val m = SessionMachine(Catalog.parse("march:2"), firstRun = false)
+        assertTrue(m.on(Ev.OpenTogether, 0).contains(Fx.OpenRoom))
+        assertEquals(Screen.Together, m.screen)
+        val fx = m.on(Ev.Ok, 1)
+        assertEquals(Screen.Intro(0), m.screen)
+        assertTrue(fx.contains(Fx.SessionStart))
+    }
+
+    @Test fun togetherWordsArePlain() {
+        for (s in listOf(Sentences.TOGETHER_SCAN, Sentences.TOGETHER_WAIT, Sentences.TOGETHER_START, Sentences.YOU))
+            assertTrue(s.split(Regex("[.?!]\\s*")).filter { it.isNotBlank() }.all { it.trim().split(" ").size < 12 })
+    }
+}

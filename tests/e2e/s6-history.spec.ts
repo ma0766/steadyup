@@ -40,10 +40,10 @@ test("S6 a finished session reaches the family page in 10 s, the TV week screen,
     await expect(family.locator("#streak")).toHaveText("1 day in a row");
     await family.screenshot({ path: "docs/screens/s6-family.png" });
 
-    // TV "This week": Back to start, arrow down to "This week", OK
+    // TV "This week": Back to start, arrow down twice to "This week", OK
     pressOk();
     await sleep(2500);
-    pressKey("KEYCODE_DPAD_DOWN"); await sleep(500); pressOk();
+    pressKey("KEYCODE_DPAD_DOWN"); await sleep(300); pressKey("KEYCODE_DPAD_DOWN"); await sleep(500); pressOk(); // Start, Move together, This week
     await waitScreen("week");
     await expect.poll(() => logcat("SteadyUpFlow"), { timeout: 15_000 }).toContain("week=sessions:1,streak:1");
     await sleep(1200);

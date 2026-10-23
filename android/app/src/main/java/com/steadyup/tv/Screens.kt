@@ -3,6 +3,7 @@ package com.steadyup.tv
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -92,13 +93,36 @@ fun SafetyScreen(onOk: () -> Unit) = Page {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun HomeScreen(onStart: () -> Unit, onWeek: () -> Unit) = Page {
+fun HomeScreen(onStart: () -> Unit, onWeek: () -> Unit, onTogether: () -> Unit) = Page {
     Text(AppInfo.NAME, fontSize = 72.sp, fontWeight = FontWeight.Bold, color = Ink.text)
     Text(Sentences.HOME_HELLO, fontSize = 48.sp, color = Ink.soft)
     Spacer(Modifier.height(40.dp))
     BigButton(Sentences.HOME_START, onStart)           // first button has focus; arrow down reaches the next one
     Spacer(Modifier.height(20.dp))
+    BigButton(Sentences.HOME_TOGETHER, onTogether, autoFocus = false)
+    Spacer(Modifier.height(20.dp))
     BigButton(Sentences.HOME_WEEK, onWeek, autoFocus = false)
+}
+
+/** What the live screen needs when family has joined. */
+data class TogetherView(val name: String, val pose: PoseFrame?, val total: Int)
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun TogetherScreen(roomCode: String?, guestName: String?, joinLink: String, onStart: () -> Unit) = Page {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(Sentences.TOGETHER_TITLE, fontSize = 52.sp, fontWeight = FontWeight.Bold, color = Ink.text)
+            Text(Sentences.TOGETHER_SCAN, fontSize = 40.sp, color = Ink.soft)
+            if (roomCode != null) Text(PairingReducer.spaced(roomCode), fontSize = 80.sp, fontWeight = FontWeight.Bold, softWrap = false, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, color = Ink.text)
+            Spacer(Modifier.height(8.dp))
+            Text(if (guestName != null) "$guestName is here." else Sentences.TOGETHER_WAIT, fontSize = 44.sp, color = if (guestName != null) Ink.good else Ink.warn)
+            Spacer(Modifier.height(12.dp))
+            BigButton(Sentences.TOGETHER_START, onStart)
+        }
+        Spacer(Modifier.width(32.dp))
+        if (roomCode != null) QrView(joinLink, 260.dp)
+    }
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -153,16 +177,23 @@ fun IntroScreen(item: PlanItem, onReady: () -> Unit) = Page {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?) {
+fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, together: TogetherView? = null) {
     Row(Modifier.fillMaxSize().background(Ink.bg).padding(32.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+        if (together == null) Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
             if (pose != null) StickFigure(pose, Modifier.fillMaxSize())
             else Text(Sentences.STEP_BACK, fontSize = 44.sp, color = Ink.warn)
+        } else Row(Modifier.weight(1f).fillMaxHeight()) {
+            // two people, side by side, each with a name under their figure
+            for ((label, p, tint) in listOf(Triple(Sentences.YOU, pose, Ink.good), Triple(together.name, together.pose, Ink.warn))) Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(Modifier.weight(1f).fillMaxWidth()) { if (p != null) StickFigure(p, Modifier.fillMaxSize(), color = tint) }
+                Text(label, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = tint)
+            }
         }
         Column(Modifier.width(560.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(item.title, fontSize = 44.sp, color = Ink.soft, textAlign = TextAlign.Center)
             Text("$count", fontSize = 220.sp, fontWeight = FontWeight.Bold, color = Ink.good)
             Text("${Sentences.OF} ${item.target}" + if (item.isHold) " seconds" else "", fontSize = 56.sp, color = Ink.text)
+            if (together != null) Text("${Sentences.TOGETHER_TOTAL} ${together.total}", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = Ink.text)
             Spacer(Modifier.height(32.dp))
             Text(cue ?: "", fontSize = 44.sp, color = Ink.warn, textAlign = TextAlign.Center, minLines = 2)
         }

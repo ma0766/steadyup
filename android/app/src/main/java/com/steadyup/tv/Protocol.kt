@@ -13,12 +13,19 @@ sealed class ServerMsg {
     data class Rep(val move: String, val count: Int) : ServerMsg()
     data class CueMsg(val text: String) : ServerMsg()
     data class ViewState(val inView: Boolean) : ServerMsg()
+    data class Room(val code: String) : ServerMsg()
+    data class Guest(val name: String, val joined: Boolean) : ServerMsg()
+    /** A message from family joined to this room (tagged by the relay), not from this TV's own phone. */
+    data class FromGuest(val name: String, val inner: ServerMsg) : ServerMsg()
     object Unreadable : ServerMsg()
 
     companion object {
         fun parse(text: String): ServerMsg = try {
             val o = JSONObject(text)
-            when (val t = o.optString("type")) {
+            if (o.optBoolean("guest")) { val name = o.optString("name", "Guest"); o.remove("guest"); FromGuest(name, parse(o.toString())) }
+            else when (val t = o.optString("type")) {
+                "room" -> Room(o.getString("code"))
+                "guest" -> Guest(o.optString("name", "Guest"), o.optString("event") == "joined")
                 "code" -> Code(o.getString("code"), o.optInt("expiresInSec", 600))
                 "paired" -> Paired
                 "peer-left" -> PeerLeft
@@ -64,6 +71,13 @@ object Sentences {
     const val FINISH_TITLE = "Well done!"
     const val FINISH_OK = "Back to start"
     const val OF = "of"
+    const val HOME_TOGETHER = "Move together"
+    const val TOGETHER_TITLE = "Move together"
+    const val TOGETHER_SCAN = "Family can join with this."
+    const val TOGETHER_WAIT = "Waiting for family…"
+    const val TOGETHER_START = "Start together"
+    const val YOU = "You"
+    const val TOGETHER_TOTAL = "Together:"
     const val HOME_WEEK = "This week"
     const val WEEK_TITLE = "This week"
     const val WEEK_NONE = "No sessions yet. Let's start."
@@ -74,5 +88,6 @@ object Sentences {
     const val WEEK_PROBLEM = "We can't reach your week right now."
     val ALL = listOf(TRY_AGAIN, CONNECTING, SCAN, OR_TYPE, CONNECTED, PHONE_READY, LOST, SAFETY_1, SAFETY_2, SAFETY_OK,
         HOME_HELLO, HOME_START, HOLD_CHAIR, INTRO_GO, STEP_BACK, PAUSED, REST, REST_SKIP, NEXT_UP, WELL_DONE, FINISH_TITLE, FINISH_OK, OF,
+        HOME_TOGETHER, TOGETHER_TITLE, TOGETHER_SCAN, TOGETHER_WAIT, TOGETHER_START, YOU, TOGETHER_TOTAL,
         HOME_WEEK, WEEK_TITLE, WEEK_NONE, WEEK_AGAIN, WEEK_LAST, WEEK_FAMILY, WEEK_LOADING, WEEK_PROBLEM)
 }
