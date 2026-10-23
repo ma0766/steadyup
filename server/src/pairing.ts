@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { randomInt } from "node:crypto";
 import type { SetRec } from "./summary";
+import type { Plan } from "./plan";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
 export const FRIENDLY = {
@@ -25,6 +26,8 @@ export interface Store {
   delConn(id: string): Promise<void>;
   putSet(home: string, rec: SetRec): Promise<void>;                  // idempotent: same session+idx overwrites
   listSets(home: string, fromDay: string, toDay: string): Promise<SetRec[]>;
+  getPlan(home: string): Promise<Plan | undefined>;
+  putPlan(home: string, plan: Plan): Promise<void>;
 }
 export interface Deps {
   store: Store;

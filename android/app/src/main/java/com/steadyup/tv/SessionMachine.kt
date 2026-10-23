@@ -42,12 +42,20 @@ sealed class Fx {
 }
 
 class SessionMachine(
-    private val plan: List<PlanItem>,
+    plan0: List<PlanItem>,
     private val restSec: Int = 20,
     private val outOfViewMs: Long = 10_000,
     private val cueShowMs: Long = 4_000,
     firstRun: Boolean = true,
 ) {
+    private var plan: List<PlanItem> = plan0
+
+    /** New weekly targets only land between sessions, never under someone's feet mid-set. */
+    fun updatePlan(newPlan: List<PlanItem>): Boolean {
+        if (screen !is Screen.Home && screen !is Screen.Week && screen !is Screen.Safety && screen !is Screen.Finish) return false
+        plan = newPlan; return true
+    }
+
     var screen: Screen = if (firstRun) Screen.Safety else Screen.Home
         private set
 

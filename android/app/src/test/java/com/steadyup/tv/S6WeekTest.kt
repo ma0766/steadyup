@@ -48,3 +48,22 @@ class S6WeekTest {
         assertNotNull(m.screen)
     }
 }
+
+class S7PlanTargetsTest {
+    @Test fun serverTargetsReplaceDefaultsBySideAndMove() {
+        val out = Catalog.withTargets(Catalog.defaultPlan(), mapOf("sit_to_stand" to 10, "side_leg_raise@right" to 10, "tandem_hold" to 25, "jumping" to 99))
+        assertEquals(10, out.first { it.move == "sit_to_stand" }.target)
+        assertEquals(8, out.first { it.side == "left" }.target)
+        assertEquals(10, out.first { it.side == "right" }.target)
+        assertTrue(out.filter { it.move == "tandem_hold" }.all { it.target == 25 })
+        assertEquals(Catalog.defaultPlan().size, out.size)
+    }
+
+    @Test fun newTargetsOnlyLandBetweenSessions() {
+        val m = SessionMachine(Catalog.parse("sit_to_stand:3"), firstRun = false)
+        val bigger = Catalog.parse("sit_to_stand:5")
+        assertTrue(m.updatePlan(bigger))                 // on Home
+        m.on(Ev.Ok, 0); m.on(Ev.Ok, 0)                   // now in a live set
+        assertEquals(false, m.updatePlan(Catalog.parse("sit_to_stand:9")))
+    }
+}

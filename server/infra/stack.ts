@@ -6,6 +6,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
 import { WebSocketLambdaIntegration, HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
@@ -40,17 +41,27 @@ export class SteadyUpStack extends cdk.Stack {
       entry: path.join(import.meta.dirname, "../src/api.ts"),
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
-      memorySize: 256,
-      timeout: cdk.Duration.seconds(10),
+      memorySize: 512,
+      timeout: cdk.Duration.seconds(28),
       environment: { TABLE: table.tableName },
       bundling: { minify: true, externalModules: ["@aws-sdk/*"] },
     });
     table.grantReadWriteData(apiFn);
+    // Weekly plan only: Bedrock Haiku via the US inference profile (never in the live loop)
+    apiFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["bedrock:InvokeModel"],
+      resources: [
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-*",
+        `arn:aws:bedrock:us-east-1:${this.account}:inference-profile/us.anthropic.claude-haiku-4-5-*`,
+      ],
+    }));
     const httpApi = new apigw.HttpApi(this, "Api", {
       corsPreflight: { allowOrigins: ["*"], allowMethods: [apigw.CorsHttpMethod.GET, apigw.CorsHttpMethod.POST], allowHeaders: ["content-type"] },
     });
     const apiInteg = new HttpLambdaIntegration("ApiInteg", apiFn);
     httpApi.addRoutes({ path: "/sets", methods: [apigw.HttpMethod.POST], integration: apiInteg });
+    httpApi.addRoutes({ path: "/plan", methods: [apigw.HttpMethod.GET], integration: apiInteg });
+    httpApi.addRoutes({ path: "/plan/refresh", methods: [apigw.HttpMethod.POST], integration: apiInteg });
     httpApi.addRoutes({ path: "/summary", methods: [apigw.HttpMethod.GET], integration: apiInteg });
 
     const integ = new WebSocketLambdaIntegration("Ws", wsFn);

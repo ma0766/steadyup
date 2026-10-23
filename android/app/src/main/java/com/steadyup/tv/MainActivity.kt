@@ -48,7 +48,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var machine: SessionMachine
     private lateinit var speaker: TtsSpeaker
     private lateinit var gate: SpeechGate
-    private lateinit var plan: List<PlanItem>
+    private lateinit var basePlan: List<PlanItem>
+    private var plan by mutableStateOf<List<PlanItem>>(emptyList())
     private val history = HistoryClient(BuildConfig.API_URL)
     private lateinit var homeId: String
     private var sessionId = "s0"
@@ -62,13 +63,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val prefs = getSharedPreferences("steadyup", MODE_PRIVATE)
         // test hooks: adb shell am start ... --es plan "sit_to_stand:3,heel_raise:3" --ei restSec 2
-        plan = intent.getStringExtra("plan")?.let { Catalog.parse(it) } ?: Catalog.defaultPlan()
+        val fixedPlan = intent.getStringExtra("plan")  // test hook: a fixed plan ignores the weekly targets
+        basePlan = fixedPlan?.let { Catalog.parse(it) } ?: Catalog.defaultPlan()
+        plan = basePlan
         val restSec = intent.getIntExtra("restSec", 20)
         // one random id per household; it is the secret inside the family link. `home` extra is a test hook.
         homeId = intent.getStringExtra("home") ?: prefs.getString("home_id", null)
             ?: java.util.UUID.randomUUID().toString().replace("-", "").also { prefs.edit().putString("home_id", it).apply() }
         machine = SessionMachine(plan, restSec, firstRun = !prefs.getBoolean("safety_done", false))
         screen = machine.screen
+        if (fixedPlan == null) history.fetchPlan(homeId) { t -> runOnUiThread { applyTargets(t) } }
         speaker = TtsSpeaker(this)
         gate = SpeechGate(speaker)
 
@@ -114,6 +118,11 @@ class MainActivity : ComponentActivity() {
         Log.i(FLOW, "screen=${screen.logName()}")
     }
 
+    private fun applyTargets(targets: Map<String, Int>) {
+        val next = Catalog.withTargets(basePlan, targets)
+        if (machine.updatePlan(next)) plan = next
+    }
+
     private fun dispatch(ev: Ev) {
         val now = SystemClock.elapsedRealtime()
         val before = screen.logName()
@@ -124,6 +133,8 @@ class MainActivity : ComponentActivity() {
         screen = machine.screen
         if (screen.logName() != before) {
             Log.i(FLOW, "screen=${screen.logName()}")
+            if (screen is Screen.Finish && intent.getStringExtra("plan") == null) // after a session: ask for next week's plan, then pick it up
+                history.refreshPlan(homeId) { history.fetchPlan(homeId) { t -> runOnUiThread { applyTargets(t) } } }
             (screen as? Screen.Finish)?.let { f -> Log.i(FLOW, "totals=" + f.totals.joinToString(",") { "${it.first}:${it.second}" }) }
         }
         for (f in fx) when (f) {

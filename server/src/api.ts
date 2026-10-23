@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { Store } from "./pairing";
 import { addDays, isDay, summarize } from "./summary";
 import { dynamoStore } from "./store-dynamo";
+import { bedrockGenerate, DEFAULT_TARGETS, makePlan, PLAN_COOLDOWN_MS } from "./plan";
 
 const HOME = /^[a-f0-9]{32}$/;
 export const SetBody = z.object({
@@ -23,7 +24,10 @@ export const SetBody = z.object({
 const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*" };
 const reply = (statusCode: number, body: unknown): APIGatewayProxyStructuredResultV2 => ({ statusCode, headers: JSON_HEADERS, body: JSON.stringify(body) });
 
-export async function route(method: string, path: string, query: Record<string, string | undefined>, body: string | undefined, store: Store, nowMs = Date.now()) {
+export async function route(
+  method: string, path: string, query: Record<string, string | undefined>, body: string | undefined, store: Store,
+  nowMs = Date.now(), generate: (prompt: string) => Promise<string> = bedrockGenerate,
+) {
   if (method === "POST" && path === "/sets") {
     let parsed: unknown;
     try { parsed = JSON.parse(body ?? ""); } catch { return reply(400, { error: "That did not look right." }); }
@@ -39,6 +43,21 @@ export async function route(method: string, path: string, query: Record<string, 
     const today = query.today && isDay(query.today) ? query.today : new Date(nowMs).toISOString().slice(0, 10);
     const sets = await store.listSets(home, addDays(today, -40), addDays(today, 2));
     return reply(200, summarize(sets, today));
+  }
+  if (path === "/plan" || path === "/plan/refresh") {
+    const home = query.home ?? "";
+    if (!HOME.test(home)) return reply(400, { error: "That link did not work." });
+    const stored = await store.getPlan(home);
+    if (method === "GET" && path === "/plan") return reply(200, stored ?? { targets: DEFAULT_TARGETS, changes: [], source: "default", updatedAt: 0 });
+    if (method === "POST" && path === "/plan/refresh") {
+      // at most one change per week (the caps are weekly) and one paid model call per week per home
+      if (stored && stored.source === "model" && nowMs - stored.updatedAt < PLAN_COOLDOWN_MS) return reply(200, stored);
+      const today = new Date(nowMs).toISOString().slice(0, 10);
+      const sets = await store.listSets(home, addDays(today, -7), addDays(today, 2));
+      const plan = await makePlan(sets, stored?.targets ?? DEFAULT_TARGETS, generate, nowMs);
+      if (plan.source === "model") await store.putPlan(home, plan); // a failed call changes nothing
+      return reply(200, plan);
+    }
   }
   return reply(404, { error: "Not found." });
 }

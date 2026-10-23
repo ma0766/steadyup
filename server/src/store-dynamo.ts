@@ -3,6 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import type { CodeRec, ConnRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
+import type { Plan } from "./plan";
 
 export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(new DynamoDBClient({}))): Store {
   const ttl = (secs: number) => Math.floor(Date.now() / 1000) + secs;
@@ -53,6 +54,13 @@ export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(
         TableName: table,
         Item: { pk: `HOME#${home}`, sk: `SET#${r.day}#${r.session}#${String(r.idx).padStart(3, "0")}`, ...r, ttl: ttl(90 * 86400) },
       }));
+    },
+    async getPlan(home) {
+      const r = await client.send(new GetCommand({ TableName: table, Key: { pk: `HOME#${home}`, sk: "PLAN" }, ConsistentRead: true }));
+      return r.Item ? ({ targets: r.Item.targets, changes: r.Item.changes, source: r.Item.source, updatedAt: r.Item.updatedAt } as Plan) : undefined;
+    },
+    async putPlan(home, plan) {
+      await client.send(new PutCommand({ TableName: table, Item: { pk: `HOME#${home}`, sk: "PLAN", ...plan, ttl: ttl(90 * 86400) } }));
     },
     async listSets(home, from, to) {
       const r = await client.send(new QueryCommand({

@@ -36,6 +36,12 @@ object Catalog {
         item("march", 12), item("tandem_hold", 20),
     )
 
+    private fun key(i: PlanItem) = i.move + (i.side?.let { "@$it" } ?: "")
+
+    /** Apply this week's targets from the server. Unknown keys are ignored; a missing key keeps the current target. */
+    fun withTargets(plan: List<PlanItem>, targets: Map<String, Int>): List<PlanItem> =
+        plan.map { targets[key(it)]?.let { t -> it.copy(target = t) } ?: it }
+
     /** Test hook: "sit_to_stand:3,heel_raise:3,side_leg_raise@left:3". */
     fun parse(spec: String): List<PlanItem> = spec.split(",").filter { it.isNotBlank() }.map { part ->
         val (name, target) = part.trim().split(":")

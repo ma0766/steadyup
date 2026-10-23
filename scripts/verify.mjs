@@ -57,6 +57,11 @@ step("emulator", e.status === 0 || e.status === 2, emuNote);
 if (e.status === 0) results.push({ slice: 0, name: "emulator install+launch+screenshot", ok: true });
 if (e.status !== 0 && e.status !== 2) results.push({ slice: 0, name: "emulator install+launch+screenshot", ok: false });
 
+// 6 live Bedrock plan smoke (blocked is reported loudly, not a failure: it needs AWS model access)
+const sm = sh("node", ["scripts/s7-smoke.mjs"]);
+step("bedrock live smoke", sm.status === 0 || sm.status === 2, sm.status === 2 ? "BLOCKED: Bedrock access" : "");
+if (sm.status !== 2) results.push({ slice: 7, name: "live plan smoke (valid, within caps)", ok: sm.status === 0 });
+
 console.log("\n=== verify: steps ===");
 for (const s of steps) console.log(`${s.ok ? "PASS" : "FAIL"}  ${s.name} ${s.note}`);
 console.log("\n=== verify: slices ===");

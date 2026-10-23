@@ -1,11 +1,13 @@
 import type { CodeRec, ConnRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
+import type { Plan } from "./plan";
 
 // In-memory Store for tests and the local dev stand-in.
 export function memoryStore(): Store {
   const codes = new Map<string, CodeRec>();
   const conns = new Map<string, ConnRec>();
   const sets = new Map<string, SetRec>();
+  const plans = new Map<string, Plan>();
   return {
     async putCode(r) { if (codes.has(r.code)) return false; codes.set(r.code, { ...r }); return true; },
     async getCode(c) { const r = codes.get(c); return r && { ...r }; },
@@ -18,6 +20,8 @@ export function memoryStore(): Store {
     async putConn(r) { conns.set(r.connId, { ...r }); },
     async delConn(id) { conns.delete(id); },
     async putSet(home, r) { sets.set(`${home}|${r.day}|${r.session}|${r.idx}`, { ...r }); },
+    async getPlan(home) { const p = plans.get(home); return p && JSON.parse(JSON.stringify(p)); },
+    async putPlan(home, plan) { plans.set(home, JSON.parse(JSON.stringify(plan))); },
     async listSets(home, from, to) {
       return [...sets.entries()].filter(([k, r]) => k.startsWith(home + "|") && r.day >= from && r.day <= to).map(([, r]) => ({ ...r }));
     },

@@ -62,6 +62,29 @@ class HistoryClient(private val apiUrl: String) {
         }
     }
 
+    /** Ask the server to refresh the weekly plan after a session. Fire and forget: a failure keeps the current plan. */
+    fun refreshPlan(home: String, then: () -> Unit) {
+        if (apiUrl.isBlank()) return
+        thread(name = "refresh-plan") {
+            try { http.newCall(Request.Builder().url("$apiUrl/plan/refresh?home=$home").post("".toRequestBody(json)).build()).execute().close() }
+            catch (e: IOException) { Log.w(TAG, "plan refresh failed: ${e.message}") }
+            then()
+        }
+    }
+
+    fun fetchPlan(home: String, onTargets: (Map<String, Int>) -> Unit) {
+        if (apiUrl.isBlank()) return
+        thread(name = "load-plan") {
+            try {
+                http.newCall(Request.Builder().url("$apiUrl/plan?home=$home").build()).execute().use { r ->
+                    if (!r.isSuccessful) return@thread
+                    val t = JSONObject(r.body?.string() ?: return@thread).getJSONObject("targets")
+                    onTargets(t.keys().asSequence().associateWith { t.getInt(it) })
+                }
+            } catch (e: Exception) { Log.w(TAG, "plan load failed: ${e.message}") }
+        }
+    }
+
     fun fetchSummary(home: String, today: String, onResult: (WeekState) -> Unit) {
         thread(name = "load-week") {
             val state = try {

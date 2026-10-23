@@ -23,11 +23,22 @@ function render(s: Summary) {
   $("last").innerHTML = lastLines(s).map((l) => `<li>${l.replace(/[<>&]/g, "")}</li>`).join("");
 }
 
+async function loadPlan(apiUrl: string) {
+  try {
+    const r = await fetch(`${apiUrl}/plan?home=${encodeURIComponent(home)}`, { cache: "no-store" });
+    const plan = await r.json();
+    const lines: string[] = (plan.changes ?? []).filter((c: any) => c.to !== c.from).map((c: any) => `${c.label}: ${c.sentence}`);
+    $("plan-card").classList.toggle("hidden", plan.source === "default" || lines.length === 0);
+    $("plan").innerHTML = lines.map((l) => `<li>${l.replace(/[<>&]/g, "")}</li>`).join("");
+  } catch { /* the plan is a bonus: the page stays usable without it */ }
+}
+
 async function load(apiUrl: string) {
   try {
     const r = await fetch(`${apiUrl}/summary?home=${encodeURIComponent(home)}&today=${localToday()}`, { cache: "no-store" });
     if (!r.ok) throw new Error(String(r.status));
     render(await r.json());
+    void loadPlan(apiUrl);
   } catch {
     problem("We can't load this week yet. Please try again.");
   }

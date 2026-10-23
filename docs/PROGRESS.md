@@ -9,7 +9,7 @@
 | S4 Session flow on TV | done | e2e s4-session: scripted phone (Node ws; synthetic landmarks through the real sit-to-stand engine) drives a 3-move session on the emulator; screenshots docs/screens/s4-*.png (safety, home, intro, live, rest, finish, paused); TTS lines verified via logcat tag SteadyUpTts. Gradle S4SessionTest: machine, 5 s speech gate, plan caps, plain-words check. | S4 |
 | S5 All five moves | done | vitest s5-moves (34 tests incl. 15-seed jitter sweep): positive, negative, low-confidence per move + every cue; e2e s5-full-session: default ten-set plan (all five moves, both sides) completes on the emulator, time-compressed (docs/screens/s5-*.png, s5-session-totals.txt) | S5 |
 | S6 History and family page | done | e2e s6-history: finished session shows on the family page within 10 s of the finish screen (docs/screens/s6-family.png), TV This week screen with family QR (s6-tv-week.png), DynamoDB read by the test: only whitelisted count fields, zero items with landmark/pose attributes. Server unit: summary, streak, idempotent save, extra fields rejected. | S6 |
-| S7 AI weekly plan | not started | | |
+| S7 AI weekly plan | done | server/src/s7-plan.test.ts: mock model asking +10 reps/+10 s/+40 is capped to +2/+5/15/30 (sweep over every current value and ask), failures (throw, prose, wrong shape) keep the plan, plain-sentence guard; live smoke `node scripts/s7-smoke.mjs` PASS: real Bedrock plan via deployed API, valid and within caps; e2e s7-plan shows it on the family page | S7 |
 | S8 Move together | not started | | |
 | S9 Submission pack | not started | | |
 
@@ -47,6 +47,10 @@
 - S6: the household id is 32 random hex chars kept on the TV; it is the secret inside the family link (QR on the TV This week screen). No accounts.
 - S6: summary 'today' = later of the page's local date and the newest recorded day, so phone/TV time-zone differences never hide a session.
 - S6: sessions = distinct session ids with at least one finished set; sets are saved as they finish (partial sessions count).
+- S7: model = Bedrock `us.anthropic.claude-haiku-4-5-20251001-v1:0` (Converse). anthropic.claude-haiku-5-5 is access-denied for this account. IAM limited to InvokeModel on Haiku 4.5 ARNs.
+- S7: caps in code: +-2 reps, +-5 s, max 15 reps / 30 s, plus a floor of 4 reps / 10 s that never raises anyone already below it. Model sentence kept only if plain (under 12 words, no tech words), else code writes 'Let's try 10.'
+- S7: only a successful model call is stored; any failure returns the current plan unchanged.
+- S7: TV loads targets at start and after Finish; they land only between sessions (machine.updatePlan). A fixed `plan` test extra ignores them.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds
