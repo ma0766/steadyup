@@ -180,13 +180,13 @@ export function sideLegRaiseFrames(o: SideOpts): Frame[] {
   }, o);
 }
 
-export type MarchOpts = CommonOpts & { lifts: number; onlyLeft?: boolean; wristsOff?: boolean };
+export type MarchOpts = CommonOpts & { lifts: number; leftKneeOnly?: boolean; wristsOff?: boolean };
 export function marchFrames(o: MarchOpts): Frame[] {
   const P = 800; // one knee lift
   return render(LEAD + o.lifts * P + 100, (t) => {
     const n = Math.floor((t - LEAD) / P);
     const w = t < LEAD ? 0 : wave(t, LEAD, 300, 100, 300, 100);
-    const left = o.onlyLeft ? true : n % 2 === 0;
+    const left = o.leftKneeOnly ? true : n % 2 === 0;
     return { kneeLift: { left: left ? w : 0, right: left ? 0 : w }, wristsOff: o.wristsOff };
   }, o);
 }

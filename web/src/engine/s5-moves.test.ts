@@ -56,7 +56,7 @@ describe("S5 side leg raise", () => {
 
 describe("S5 marching in place", () => {
   it("counts 12 alternating knee lifts as 12 reps", () => expect(run("march", marchFrames({ lifts: 12, noise: 0.003 })).count).toBe(12));
-  it("counts the same knee twice in a row only once", () => expect(run("march", marchFrames({ lifts: 6, onlyLeft: true })).count).toBe(1));
+  it("counts the same knee twice in a row only once", () => expect(run("march", marchFrames({ lifts: 6, leftKneeOnly: true })).count).toBe(1));
   it("counts 0 and says so when the legs are out of view", () => {
     const r = run("march", hide(marchFrames({ lifts: 6 }), [LM.L_KNEE, LM.R_KNEE, LM.L_ANKLE, LM.R_ANKLE]));
     expect(r.count).toBe(0); expect(lowConf(r.events)).toBe(true);

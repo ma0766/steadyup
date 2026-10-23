@@ -17,3 +17,4 @@ cdk-outputs.json
 web/public/mediapipe
 web/public/models
 fixtures/*.webm
+docs/screens/verify-tv.png

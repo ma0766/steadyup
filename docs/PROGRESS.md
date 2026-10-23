@@ -11,7 +11,7 @@
 | S6 History and family page | done | e2e s6-history: finished session shows on the family page within 10 s of the finish screen (docs/screens/s6-family.png), TV This week screen with family QR (s6-tv-week.png), DynamoDB read by the test: only whitelisted count fields, zero items with landmark/pose attributes. Server unit: summary, streak, idempotent save, extra fields rejected. | S6 |
 | S7 AI weekly plan | done | server/src/s7-plan.test.ts: mock model asking +10 reps/+10 s/+40 is capped to +2/+5/15/30 (sweep over every current value and ask), failures (throw, prose, wrong shape) keep the plan, plain-sentence guard; live smoke `node scripts/s7-smoke.mjs` PASS: real Bedrock plan via deployed API, valid and within caps; e2e s7-plan shows it on the family page | S7 |
 | S8 Move together | done | e2e s8-together: (1) two scripted people through real engines: both labelled figures, separate reps, TV log together=6 for 3+3 (docs/screens/s8-tv-room.png, s8-tv-two-figures.png); (2) two fake-camera browser pages (Mom paired to the TV, Ana joined from her own phone page): TV shows both figures and a Together total (s8-tv-two-cameras.png). Server unit: rooms, tagging, broadcast, refusals. | S8 |
-| S9 Submission pack | not started | | |
+| S9 Submission pack | done | `bash scripts/clean-clone-check.sh`: fresh clone -> npm ci, npm test, APK built, Gradle tests pass; gitleaks: no leaks (12 commits); npm audit: 0 vulnerabilities; README, LICENSE (MIT), FEEDBACK.md, FRICTION_LOG.md, docs/DEMO.md, docs/MORNING-REPORT.md written | S9 |
 
 ## Decisions
 
@@ -53,6 +53,8 @@
 - S7: TV loads targets at start and after Finish; they land only between sessions (machine.updatePlan). A fixed `plan` test extra ignores them.
 - S8: Move together = a room on the host TV (6-digit number, 1 hour). Family joins from their own phone page (together.html) with their own camera, so one emulator is enough for the proof. The relay tags guest messages `guest:true,name` so the TV never mixes them with its own phone; the TV does not ack guest poses; the TV broadcasts each move/set-end to guests so their phone counts the same move.
 - S8: Together total = my finished reps + my live count + the guest's finished and live reps. Only body points and counts cross the relay; guests' video never leaves their phone. A second real TV joining a room is not built (the spec allowed one emulator with a split view).
+- S9: spoken cues cannot be heard on the Android TV emulator (no speech engine, `engine ready=false`); verified by logs and unit tests and disclosed in README and the morning report.
+- S9: rejected review nits left open on purpose (logged in the morning report): no attempt limit on pairing numbers, one guest per room, Back mid-set not saved, ASCII-only guest names.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds
@@ -71,7 +73,7 @@
 
 ## Left for the human
 
-- Real webcam + phone check (10 sit-to-stands)
+- Real webcam + phone check (10 sit-to-stands); read docs/MORNING-REPORT.md first
 - Record the 2:45 video (docs/DEMO.md)
 - Friction log "what happened" column
 - Make the GitHub repo public; submit on Devpost before Fri 12:00 PM PT
