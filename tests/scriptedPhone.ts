@@ -114,8 +114,7 @@ export class ScriptedPhone {
       if (lastCount > 0 && i % 80 === 0) this.send({ type: "rep", move, count: lastCount }); // same heal-by-resend as the phone page
       await sleep(this.frameMs);
     }
-    // the last count is re-sent until the TV ends the set (it sends set-end), like the phone page does
-    while (id === this.runId && lastCount > 0 && lastSent++ < 6) { this.send({ type: "rep", move, count: lastCount }); await sleep(500); }
+    while (id === this.runId && lastCount > 0 && lastSent++ < 60) { this.send({ type: "rep", move, count: lastCount }); await sleep(500); } // like the phone page: keep re-sending until the TV ends the set
     console.log(`[phone] set ${move} ended: aborted=${id !== this.runId} lastCount=${lastCount}/${target}`);
   }
 }
