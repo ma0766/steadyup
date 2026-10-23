@@ -1,9 +1,0 @@
-/goal Build SteadyUp overnight, unattended. I am asleep: never ask me anything. Follow CLAUDE.md, docs/SPEC.md and docs/SLICES.md. First read docs/PROGRESS.md and git log and continue from where work stopped; never redo finished work.
-
-Build slices S0 to S8 in order, tests first, one commit and push per slice, a subagent review per slice. Log every decision, tuned threshold and blocker in docs/PROGRESS.md. If something needs me (AWS login expired, Bedrock access, emulator will not boot), log it under Blocked on user, use a clearly labelled stand-in with the same interface, and keep going.
-
-Hard stop at 7:00 AM ET Friday: whatever slice you are on, stop it, make sure everything committed still passes, then do S9. S9 is mandatory even if earlier slices are unfinished.
-
-Rules: never skip or weaken a test; grep -rnE "\.skip|\.only|xit\(|it\.todo" in all test folders returns nothing; video never leaves the phone; no medical or fall-detection claims; no tech words a user can see; every error keeps the session usable; AI never in the live loop and plan caps enforced in code; no secrets in git; no always-on paid AWS resources.
-
-Done only when this conversation shows: npm run verify exiting 0 with a PASS/FAIL table per slice; the APK running on the Android TV emulator with the stick figure moving from the fake camera video (adb screenshot in docs/screens/); the sit-to-stand fixture test counting 10/10 and the knee cue firing on the bad-form fixture; median phone-to-TV latency logged; a full session completing in an e2e test; the AI plan cap test passing; README, LICENSE, FEEDBACK.md, FRICTION_LOG.md, docs/DEMO.md present; gitleaks clean; npm audit with no high or critical; and docs/MORNING-REPORT.md written for me in plain words: what works, what is a stand-in, what is broken, exact steps to run the demo, and the 3 things I must do first. Stop after 300 turns if not met and write MORNING-REPORT.md anyway.

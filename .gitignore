@@ -18,3 +18,40 @@ web/public/mediapipe
 web/public/models
 fixtures/*.webm
 docs/screens/verify-tv.png
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# logs, temp, backups
+*.log
+*.tmp
+*.bak
+npm-debug.log*
+coverage/
+.nyc_output/
+.cache/
+verify-*.log
+
+# secrets and signing
+.env.*
+*.pem
+*.key
+*.jks
+*.keystore
+.aws/
+
+# build outputs
+*.apk
+*.aab
+android/.gradle/
+android/app/build/
+android/build/
+*.tsbuildinfo
+.claude/settings.local.json
+
+# local goal/prompt notes
+GOAL.txt
