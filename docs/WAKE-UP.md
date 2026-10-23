@@ -27,6 +27,10 @@ Also: the Home screen is now a 2x2 grid (all four buttons fit), the live screen 
 2. **The chair stand check** with that same setup (chair without arms, arms crossed). Compare the score with what you count yourself.
 3. Press through every screen with only the arrow keys, Enter and Esc.
 
+## Known intermittent issue (found late, not fixed)
+
+About one full `npm run verify` in four fails once, on a different long end-to-end test each time (S5 at set 5 and set 10, S6 at set 2, S4 once). Every time the symptom is the same: the TV never leaves a live set ("TV never showed intro:N"), i.e. a set did not complete. The same test passes when re-run alone. My reading, not proven: now and then a start or count message is lost between the phone, the cloud relay and the TV, and the repeat-and-heal logic (the phone re-sends its count every second; the TV repeats the start message every 2 s) does not always recover in time. If you see a set freeze during real use, Back then Start again recovers it. A next step would be to log message ids on the relay and the TV for a long run to find the gap. The last full verify run on the final code was fully green apart from this kind of single stall, and several earlier full runs on the same code were fully green (see docs/PROGRESS.md).
+
 ## What is still not done
 
 - No older adult has tried it, and no real Fire TV was used (emulator only). The emulator has no voice, so spoken cues were never heard.

@@ -38,6 +38,8 @@
 
 **Pairing-address fix merged (11:00):** the pairing screen now shows only the QR and the number. It took several verify runs because each failed on something that was not the change: slow first launch after a fresh install (helper wait is now 2 minutes), an adb screencap socket error (helper retries), the two S4 tests running about 85 s against Playwright's 90 s default (now 3 minutes), and one Bedrock call that came back 'kept' (live service). The final run on the branch: `npm run verify` exit 0, every slice PASS, S9 53 checks, Lighthouse 100, 133 unit tests; the regenerated s1-tv-code.png shows no address. Merged to main and tag submission-v2 moved. No cloud change was needed (only the TV app, tests and docs changed). This is past the 9:00 AM target; the end step itself (merge of worldclass, main deploy, S0 check, tag) was done at about 06:35.
 
+**Final run (11:12-11:35):** `npm run verify` on main after the fresh screenshot review: one e2e failure, S6 "TV never showed intro:1" (the intermittent set-freeze described in docs/WAKE-UP.md); everything else passed. Earlier full runs on the same code (verify-pa6, the last green on the pairing-address branch, tree identical to main) were fully green: all slices PASS, S9 53, Lighthouse 100. Not diagnosed further: the stall is rare and needs relay-side message logging.
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
