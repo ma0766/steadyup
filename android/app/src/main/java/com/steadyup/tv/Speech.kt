@@ -30,12 +30,13 @@ class SpeechGate(private val speaker: Speaker, private val minGapMs: Long = 5_00
     private fun speakNow(text: String, nowMs: Long) { lastAt = nowMs; if (text == pending) pending = null; speaker.speak(text) }
 }
 
-class TtsSpeaker(context: Context) : Speaker {
+class TtsSpeaker(context: Context, private val onReady: (Boolean) -> Unit = {}) : Speaker {
     private var ready = false
     private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
         ready = status == TextToSpeech.SUCCESS
         if (ready) tts.language = Locale.US
         Log.i(TAG, "engine ready=$ready")
+        onReady(ready) // no voice on this device: the screen shows cues bigger instead
     }
 
     override fun speak(text: String) {

@@ -3,7 +3,7 @@ import { endpoints } from "../endpoints";
 import { ScriptedPhone } from "../scriptedPhone";
 import { tvCode, tvScreenshot, pressOk, waitScreen, logcat, sleep } from "../tv";
 
-const PLAN = ["--es", "plan", "sit_to_stand:3,heel_raise:3,march:3", "--ei", "restSec", "2"];
+const PLAN = ["--es", "plan", "sit_to_stand:3,heel_raise:3,march:3", "--ei", "restSec", "5"];
 let phone: ScriptedPhone | undefined;
 test.afterEach(() => { phone?.close(); phone = undefined; });
 

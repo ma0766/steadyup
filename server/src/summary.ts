@@ -8,11 +8,12 @@ export type Summary = {
   prevWeekSessions: number;
   streak: number;
   days: { day: string; sessions: number; reps: number }[]; // last 7 days, oldest first
+  chair: { day: string; score: number }[]; // CDC 30-second chair stand scores, oldest first (last 8)
   last: { day: string; totals: { label: string; done: number; unit: "reps" | "seconds" }[] } | null;
 };
 
 const TITLES: Record<string, string> = {
-  sit_to_stand: "Sit to stand", heel_raise: "Heel raises", side_leg_raise: "Leg out to the side", march: "March in place", tandem_hold: "Foot in front",
+  chair_stand_30: "Chair stand check", sit_to_stand: "Sit to stand", heel_raise: "Heel raises", side_leg_raise: "Leg out to the side", march: "March in place", tandem_hold: "Foot in front",
 };
 export const moveLabel = (move: string, side?: string) => (TITLES[move] ?? move) + (side ? `, ${side}` : "");
 
@@ -20,9 +21,13 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 export const isDay = (s: string) => DAY.test(s) && !Number.isNaN(Date.parse(s + "T00:00:00Z"));
 export const addDays = (day: string, n: number) => new Date(Date.parse(day + "T00:00:00Z") + n * 86_400_000).toISOString().slice(0, 10);
 
-export function summarize(sets: SetRec[], todayParam: string): Summary {
+export function summarize(allSets: SetRec[], todayParam: string): Summary {
+  // the chair stand check is a measurement, not a workout: it has its own trend and stays out of sessions, streaks and totals
+  const chairSets = allSets.filter((s) => s.move === "chair_stand_30").sort((a, b) => a.ts - b.ts);
+  const sets = allSets.filter((s) => s.move !== "chair_stand_30");
+  const chair = chairSets.slice(-8).map((s) => ({ day: s.day, score: s.done }));
   // Phone and TV can sit in different time zones: never treat a recorded day as "in the future".
-  const latest = sets.reduce((m, s) => (s.day > m ? s.day : m), "");
+  const latest = allSets.reduce((m, s) => (s.day > m ? s.day : m), "");
   const today = latest > todayParam ? latest : todayParam;
 
   const sessionsOn = (from: string, to: string) => new Set(sets.filter((s) => s.day >= from && s.day <= to).map((s) => s.session));
@@ -53,5 +58,5 @@ export function summarize(sets: SetRec[], todayParam: string): Summary {
     }
     last = { day: newest.day, totals: [...totals.values()] };
   }
-  return { today, weekSessions, prevWeekSessions, streak, days, last };
+  return { today, weekSessions, prevWeekSessions, streak, days, chair, last };
 }

@@ -1,7 +1,7 @@
 // DynamoDB-backed Store. Single table: pk = CODE#<code> | CONN#<id>, sk = "v". TTL attribute "ttl" (epoch s).
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import type { CodeRec, ConnRec, RoomRec, Store } from "./pairing";
+import type { CodeRec, ConnRec, FailRec, RoomRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
 import type { Plan } from "./plan";
 
@@ -55,9 +55,19 @@ export function dynamoStore(table: string, client = DynamoDBDocumentClient.from(
         Item: { pk: `HOME#${home}`, sk: `SET#${r.day}#${r.session}#${String(r.idx).padStart(3, "0")}`, ...r, ttl: ttl(90 * 86400) },
       }));
     },
+    async getFail(addr) {
+      const r = await client.send(new GetCommand({ TableName: table, Key: { pk: `FAIL#${addr}`, sk: "v" }, ConsistentRead: true }));
+      return r.Item ? ({ count: r.Item.count, windowStart: r.Item.windowStart, blockedUntil: r.Item.blockedUntil } as FailRec) : undefined;
+    },
+    async putFail(addr, rec) {
+      await client.send(new PutCommand({ TableName: table, Item: { pk: `FAIL#${addr}`, sk: "v", ...rec, ttl: ttl(600) } }));
+    },
+    async delRoom(code) {
+      await client.send(new DeleteCommand({ TableName: table, Key: { pk: `ROOM#${code}`, sk: "v" } }));
+    },
     async putRoom(rec: RoomRec) {
       try {
-        await client.send(new PutCommand({ TableName: table, Item: { pk: `ROOM#${rec.code}`, sk: "v", ...rec, ttl: ttl(3600) }, ConditionExpression: "attribute_not_exists(pk)" }));
+        await client.send(new PutCommand({ TableName: table, Item: { pk: `ROOM#${rec.code}`, sk: "v", ...rec, ttl: ttl(1800) }, ConditionExpression: "attribute_not_exists(pk)" }));
         return true;
       } catch (e: any) { if (e.name === "ConditionalCheckFailedException") return false; throw e; }
     },

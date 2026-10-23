@@ -5,9 +5,11 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <application
         android:label="SteadyUp"
+        android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/banner"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity android:name=".MainActivity" android:exported="true" android:banner="@drawable/banner" android:icon="@mipmap/ic_launcher" android:label="SteadyUp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

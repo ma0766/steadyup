@@ -2,39 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<link rel="icon" href="data:," />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SteadyUp together</title>
 <style>
-  :root { color-scheme: dark; }
-  body { margin: 0; font: 20px/1.4 system-ui, sans-serif; background: #101820; color: #fff; }
-  main { max-width: 480px; margin: 0 auto; padding: 24px; }
-  h1 { font-size: 32px; margin: 0 0 8px; }
-  input { font: 28px system-ui; width: 100%; box-sizing: border-box; padding: 12px; text-align: center; border-radius: 12px; border: 3px solid #5fa8d3; background: #fff; color: #101820; margin-top: 8px; }
-  #code { font: 36px monospace; letter-spacing: 8px; }
-  button { font: 600 24px system-ui; width: 100%; margin-top: 16px; padding: 16px; border-radius: 12px; border: 0; background: #5fa8d3; color: #101820; }
-  #status { margin-top: 16px; font-size: 22px; min-height: 2em; }
-  #status.ok { color: #7bdc8f; font-weight: 700; }
-  #status.bad { color: #ffb4a2; }
-  #preview { width: 160px; border-radius: 12px; transform: scaleX(-1); background: #000; }
+  :root { color-scheme: dark; --bg: #101820; --card: #1b2a38; --ink: #ffffff; --soft: #bfd7ea; --blue: #5fa8d3; --good: #7bdc8f; --warn: #ffd166; --bad: #ffb4a2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 20px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  main { max-width: 480px; margin: 0 auto; padding: 24px 16px 40px; text-align: center; }
+  h1 { font-size: 36px; margin: 8px 0 4px; }
+  .lead { color: var(--soft); margin: 4px 0 16px; }
+  .card { background: var(--card); border-radius: 20px; padding: 20px 16px; margin: 16px 0; }
+  label.sr { position: absolute; left: -9999px; }
+  input { font: 36px ui-monospace, monospace; letter-spacing: 8px; width: 100%; padding: 14px 8px; text-align: center; border-radius: 14px; border: 3px solid var(--blue); background: #fff; color: #101820; }
+  input:focus-visible, button:focus-visible { outline: 4px solid var(--warn); outline-offset: 3px; }
+  button { font: 700 24px system-ui, sans-serif; width: 100%; min-height: 60px; margin-top: 16px; padding: 14px; border-radius: 14px; border: 0; background: var(--blue); color: #101820; cursor: pointer; }
+  .tip { color: var(--soft); font-size: 18px; margin: 16px 0 0; }
+  #status { margin: 16px 0 0; font-size: 22px; min-height: 2em; }
+  #status.ok { color: var(--good); font-weight: 700; }
+  #status.bad { color: var(--bad); }
+  .cam { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 20px; overflow: hidden; background: #000; }
+  .cam video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .cam svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .55; pointer-events: none; }
+  #seen { font-size: 22px; margin: 12px 0 0; }
+  #count { font-size: 96px; line-height: 1.1; margin: 0; color: var(--good); font-weight: 700; }
   .hidden { display: none; }
 </style>
 </head>
 <body>
-<main>
+<main id="app">
   <h1>Move together</h1>
-  <section id="join">
-    <p>Type your name and the 6 numbers on their TV.</p>
-    <input id="name" autocomplete="given-name" maxlength="16" placeholder="Your name" aria-label="Your name" />
-    <input id="code" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Number from the TV" />
+  <section id="join" class="card">
+    <p class="lead">Type your name and the 6 numbers on their TV.</p>
+    <label class="sr" for="name">Your name</label>
+    <input id="name" autocomplete="given-name" maxlength="16" placeholder="Your name" style="font:28px system-ui;letter-spacing:0;margin-bottom:12px" />
+    <label class="sr" for="code">Number from the TV</label>
+    <input id="code" inputmode="numeric" autocomplete="off" maxlength="8" />
     <button id="joinBtn" type="button">Join</button>
   </section>
   <section id="live" class="hidden">
-    <video id="preview" playsinline muted></video>
+    <div class="cam"><video id="preview" playsinline muted aria-hidden="true"></video></div>
     <p id="seen">Looking for you…</p>
-    <p id="count" aria-label="Count" style="font-size:96px;margin:0;color:#7bdc8f">0</p>
+    <p id="count" aria-label="Count">0</p>
   </section>
   <p id="status" role="status">Ready.</p>
-  <p><small style="color:#8fa9bd">Your camera stays on your phone. Only counts are shared.</small></p>
+  <p class="tip">Your camera stays on your phone. Only counts are shared.</p>
 </main>
 <script type="module" src="./src/together.ts"></script>
 </body>

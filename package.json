@@ -17,6 +17,7 @@
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.0.0",
     "@types/ws": "^8.18.2",

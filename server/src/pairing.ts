@@ -7,6 +7,9 @@ import type { SetRec } from "./summary";
 import type { Plan } from "./plan";
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
+export const ROOM_TTL_MS = 30 * 60 * 1000; // rooms expire on their own (also a DynamoDB TTL)
+/** 5 wrong tries in a minute from one address, then a one-minute wait. */
+export const TRY_LIMIT = { tries: 5, windowMs: 60_000, blockMs: 60_000 };
 export const FRIENDLY = {
   unknown: "That number didn't work. Check the number on your TV.",
   expired: "That number ran out of time. Look at the TV for a new one.",
@@ -15,10 +18,12 @@ export const FRIENDLY = {
   badInput: "Type the 6 numbers from your TV.",
   noRoom: "That family number didn't work. Ask for a new one.",
   roomFull: "That room is full right now.",
+  slowDown: "Too many tries. Please wait a minute.",
 } as const;
 
 export interface CodeRec { code: string; tvConn: string; expiresAt: number; used: boolean; phoneConn?: string }
 export interface ConnRec { connId: string; role: "tv" | "phone" | "guest"; code?: string; peer?: string; room?: string; name?: string }
+export interface FailRec { count: number; windowStart: number; blockedUntil: number }
 export interface RoomRec { code: string; tvConn: string; expiresAt: number; guests: string[] }
 export interface Store {
   putCode(rec: CodeRec): Promise<boolean>; // false if code already exists
@@ -29,6 +34,9 @@ export interface Store {
   delConn(id: string): Promise<void>;
   putSet(home: string, rec: SetRec): Promise<void>;                  // idempotent: same session+idx overwrites
   listSets(home: string, fromDay: string, toDay: string): Promise<SetRec[]>;
+  getFail(addr: string): Promise<FailRec | undefined>;
+  putFail(addr: string, rec: FailRec): Promise<void>;
+  delRoom(code: string): Promise<void>;
   putRoom(rec: RoomRec): Promise<boolean>;
   getRoom(code: string): Promise<RoomRec | undefined>;
   addGuest(code: string, conn: string): Promise<void>;
@@ -40,6 +48,8 @@ export interface Deps {
   send: (connId: string, text: string) => Promise<boolean>; // false when the peer is gone
   now: () => number;
   genCode: () => string;
+  /** Who is asking (source address). Wrong-number tries are counted per address. */
+  addr?: string;
 }
 
 const Hello = z.object({ type: z.literal("hello"), role: z.literal("tv") });
@@ -99,10 +109,11 @@ async function onJoin(phoneConn: string, raw: string, d: Deps) {
   const code = raw.trim();
   const fail = (m: string) => d.send(phoneConn, json({ type: "error", message: m }));
   if (!/^\d{6}$/.test(code)) return void (await fail(FRIENDLY.badInput));
+  if (await blocked(d)) return void (await fail(FRIENDLY.slowDown));
   const rec = await d.store.getCode(code);
-  if (!rec) return void (await fail(FRIENDLY.unknown));
-  if (rec.used) return void (await fail(FRIENDLY.used));
-  if (rec.expiresAt <= d.now()) return void (await fail(FRIENDLY.expired));
+  if (!rec) { await wrongTry(d); return void (await fail(FRIENDLY.unknown)); }
+  if (rec.used) { await wrongTry(d); return void (await fail(FRIENDLY.used)); }
+  if (rec.expiresAt <= d.now()) { await wrongTry(d); return void (await fail(FRIENDLY.expired)); }
   if (!(await d.store.getConn(rec.tvConn))) return void (await fail(FRIENDLY.tvGone)); // TV socket already closed: do not burn the code
   if (!(await d.store.claimCode(code, phoneConn, d.now()))) return void (await fail(FRIENDLY.used));
   await d.store.putConn({ connId: phoneConn, role: "phone", code, peer: rec.tvConn });
@@ -126,24 +137,27 @@ async function onDisconnect(connId: string, d: Deps) {
 async function onRoomOpen(tvConn: string, d: Deps) {
   const me = await d.store.getConn(tvConn);
   if (me?.role !== "tv") return; // only a TV that said hello can host a room
+  if (me.room) await d.store.delRoom(me.room); // opening a new room closes the old one
   for (let i = 0; i < 5; i++) {
     const code = d.genCode();
-    if (!(await d.store.putRoom({ code, tvConn, expiresAt: d.now() + CODE_TTL_MS * 6, guests: [] }))) continue;
+    if (!(await d.store.putRoom({ code, tvConn, expiresAt: d.now() + ROOM_TTL_MS, guests: [] }))) continue;
     await d.store.putConn({ ...(me ?? { connId: tvConn, role: "tv" as const }), connId: tvConn, role: "tv", room: code });
     await d.send(tvConn, json({ type: "room", code }));
     return;
   }
 }
 
-const cleanName = (n?: string) => (n && /^[A-Za-z][A-Za-z '-]{0,15}$/.test(n.trim()) ? n.trim() : "Guest");
+// letters from any language (José, Zoë, Søren), spaces, apostrophes and hyphens; anything else becomes "Guest"
+const cleanName = (n?: string) => (n && /^\p{L}[\p{L} '’-]{0,15}$/u.test(n.trim().normalize("NFC")) ? n.trim().normalize("NFC") : "Guest");
 
 async function onRoomJoin(conn: string, raw: string, name: string | undefined, d: Deps) {
   const code = raw.trim();
   const fail = (m: string) => d.send(conn, json({ type: "error", message: m }));
   if (!/^\d{6}$/.test(code)) return void (await fail(FRIENDLY.badInput));
   if (await d.store.getConn(conn)) return void (await fail(FRIENDLY.noRoom)); // a connection that already has a role cannot become a guest
+  if (await blocked(d)) return void (await fail(FRIENDLY.slowDown));
   const room = await d.store.getRoom(code);
-  if (!room || room.expiresAt <= d.now()) return void (await fail(FRIENDLY.noRoom));
+  if (!room || room.expiresAt <= d.now()) { await wrongTry(d); return void (await fail(FRIENDLY.noRoom)); }
   if (!(await d.store.getConn(room.tvConn))) return void (await fail(FRIENDLY.noRoom)); // host TV already gone
   if (room.guests.length >= 1) return void (await fail(FRIENDLY.roomFull)); // the TV shows one guest
   const who = cleanName(name);
@@ -159,4 +173,19 @@ async function onRoomBroadcast(tvConn: string, msg: Record<string, unknown>, d: 
   const room = await d.store.getRoom(me.room);
   const text = json(msg);
   for (const g of room?.guests ?? []) await d.send(g, text);
+}
+
+// --- wrong-number limiter: pairing and room numbers are 6 digits, so guessing must be slow ---
+async function blocked(d: Deps): Promise<boolean> {
+  const rec = d.addr ? await d.store.getFail(d.addr) : undefined;
+  return !!rec && rec.blockedUntil > d.now();
+}
+async function wrongTry(d: Deps): Promise<void> {
+  if (!d.addr) return;
+  const now = d.now(), rec = await d.store.getFail(d.addr);
+  let next = rec && now - rec.windowStart <= TRY_LIMIT.windowMs && rec.blockedUntil <= now
+    ? { ...rec, count: rec.count + 1 }
+    : { count: 1, windowStart: now, blockedUntil: 0 };
+  if (next.count >= TRY_LIMIT.tries) next = { count: 0, windowStart: now, blockedUntil: now + TRY_LIMIT.blockMs };
+  await d.store.putFail(d.addr, next);
 }
