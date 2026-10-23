@@ -1,7 +1,7 @@
 // Live loop on the phone: camera -> pose -> throttled send (20/s). Also measures round-trip time via TV acks.
 import { createPoseDetector, packLandmarks } from "./pose";
-import { createEngine } from "./engine/engine";
-import type { EngineEvent } from "./engine/types";
+import { createEngine, type MoveEngine } from "./engine/engine";
+import type { EngineEvent, MoveId } from "./engine/types";
 
 export const SEND_INTERVAL_MS = 50; // 20 messages/s to the TV
 
@@ -19,7 +19,7 @@ export async function startLive(
   video: HTMLVideoElement,
   send: (o: unknown) => void,
   onTick: (seen: boolean) => void,
-): Promise<{ stop: () => void; onAck: (t: number) => void }> {
+): Promise<{ stop: () => void; onAck: (t: number) => void; setMove: (move: string, side?: string | null) => string | null; endSet: () => void }> {
   const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: "user" }, audio: false });
   video.srcObject = stream;
   let detect: Awaited<ReturnType<typeof createPoseDetector>>;
@@ -31,7 +31,9 @@ export async function startLive(
     throw e;
   }
   const tele: Telemetry = (window.__steadyup = { latenciesMs: [], sent: 0, detected: 0 });
-  const engine = createEngine("sit_to_stand"); // S4 will pick the move from the TV; counting lives on the phone
+  // The TV picks the move ("move" message); counting lives here on the phone. Nothing counts until a set starts.
+  let engine: MoveEngine | null = null;
+  let moveLabel = ""; // kept for debugging in the console
   const forward = (events: EngineEvent[]) => {
     for (const e of events) {
       if (e.type === "rep") send({ type: "rep", move: e.move, count: e.count });
@@ -51,7 +53,7 @@ export async function startLive(
         let lm: ReturnType<typeof detect> = null;
         try { lm = detect(video, now); } catch { /* one bad frame must not stop the loop */ }
         onTick(!!lm);
-        forward(engine.push({ t: now, lm }));
+        if (engine) forward(engine.push({ t: now, lm }));
         if (lm) {
           last = now;
           tele.detected++;
@@ -65,6 +67,12 @@ export async function startLive(
   requestAnimationFrame(frame);
 
   return {
+    // returns an error sentence if this move cannot be counted
+    setMove: (move, _side) => {
+      try { engine = createEngine(move as MoveId); moveLabel = move; return null; }
+      catch { engine = null; return "I can't count that one yet."; }
+    },
+    endSet: () => { engine?.reset(); engine = null; },
     stop: () => { running = false; stream.getTracks().forEach((t) => t.stop()); },
     // TV echoes our timestamp; clocks differ so we use round trip / 2 (one-way estimate).
     onAck: (t) => { tele.latenciesMs.push((Date.now() - t) / 2); },

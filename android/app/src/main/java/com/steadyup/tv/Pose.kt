@@ -51,3 +51,16 @@ object Skeleton {
     /** TV is a mirror: the person's right hand appears on the right of the screen. */
     fun mirrorX(x: Float) = 1f - x
 }
+
+/** A calm standing figure for the "picture" on the intro screen. */
+object MovePicture {
+    val standing: PoseFrame = run {
+        val x = FloatArray(LANDMARKS) { 0.5f }; val y = FloatArray(LANDMARKS) { 0.5f }
+        fun p(i: Int, px: Float, py: Float) { x[i] = px; y[i] = py }
+        p(0, 0.5f, 0.12f)
+        p(11, 0.44f, 0.24f); p(12, 0.56f, 0.24f); p(13, 0.41f, 0.38f); p(14, 0.59f, 0.38f); p(15, 0.40f, 0.50f); p(16, 0.60f, 0.50f)
+        p(23, 0.46f, 0.52f); p(24, 0.54f, 0.52f); p(25, 0.46f, 0.72f); p(26, 0.54f, 0.72f); p(27, 0.46f, 0.92f); p(28, 0.54f, 0.92f)
+        p(29, 0.45f, 0.94f); p(30, 0.55f, 0.94f); p(31, 0.43f, 0.95f); p(32, 0.57f, 0.95f)
+        PoseFrame(x, y, FloatArray(LANDMARKS) { 1f })
+    }
+}

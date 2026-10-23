@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import { endpoints } from "../endpoints";
 import { newPhone, closePhones } from "../phone";
-import { tvCode, tvScreenshot, tvScreenshotBuffer, logcat, sleep } from "../tv";
+import { tvCode, tvScreenshot, tvScreenshotBuffer, logcat, sleep, pressOk, waitScreen } from "../tv";
 
 const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
@@ -13,6 +13,12 @@ test("S2 fake camera moves the TV stick figure; latency is logged", async ({ bro
   const phone = await newPhone(browser);
   await phone.goto(`${endpoints.webUrl}/?code=${code}&delegate=cpu`);
   await expect(phone.locator("#status")).toHaveText("Connected", { timeout: 20_000 });
+
+  // walk the remote through safety -> home -> intro -> live set, where the mirror shows
+  await waitScreen("safety"); pressOk();
+  await waitScreen("home"); pressOk();
+  await waitScreen("intro:0"); pressOk();
+  await waitScreen("live:0");
 
   // phone sees a body in the fake video and streams body points
   await expect(phone.locator("#seen")).toHaveText("I can see you.", { timeout: 60_000 });

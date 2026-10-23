@@ -12,13 +12,13 @@ import kotlin.math.min
 
 // Draws the body points as a stick figure. Canvas is immediate-mode: redrawn whenever `pose` changes.
 @Composable
-fun StickFigure(pose: PoseFrame, modifier: Modifier = Modifier.fillMaxSize(), color: Color = Color(0xFF7BDC8F)) {
+fun StickFigure(pose: PoseFrame, modifier: Modifier = Modifier.fillMaxSize(), color: Color = Color(0xFF7BDC8F), mirror: Boolean = true) {
     Canvas(modifier) {
         // keep the phone camera's 4:3 shape so arms and legs are not stretched
         val h = size.height
         val w = min(size.width, h * 4f / 3f)
         val left = (size.width - w) / 2f
-        fun pt(i: Int) = Offset(left + Skeleton.mirrorX(pose.x[i]) * w, pose.y[i] * h)
+        fun pt(i: Int) = Offset(left + (if (mirror) Skeleton.mirrorX(pose.x[i]) else pose.x[i]) * w, pose.y[i] * h)
         val stroke = h * 0.014f
         for ((a, b) in Skeleton.BONES) if (pose.visible(a) && pose.visible(b))
             drawLine(color, pt(a), pt(b), strokeWidth = stroke, cap = StrokeCap.Round)

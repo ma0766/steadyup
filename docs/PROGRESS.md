@@ -6,7 +6,7 @@
 | S1 Pairing | done | `npm run verify` exit 0: S1 PASS (server unit: code, join, expired, reused, dead TV; Gradle reducer tests; e2e: Playwright phone joins with code read from adb logcat, TV screenshots docs/screens/s1-tv-code.png, s1-tv-connected.png) | S1 |
 | S2 Live mirror | done | e2e: fake-camera y4m (real person) -> MediaPipe on phone page -> deployed relay -> TV figure (docs/screens/s2-tv-figure.png, two shots differ). Median phone->TV latency 82-85 ms, p95 ~110 ms (docs/LATENCY.md). Gradle S2MirrorTest (parse, smoother, mirror). | S2 |
 | S3 Rep engine: sit to stand | done | vitest web/src/engine/s3-sit-to-stand.test.ts: 10/10 reps exact (jitter, near/far scale), 0 when out of frame or legs hidden, knee cue fires on caving fixture and not on clean; e2e recorder page saves landmark JSON from the fake camera | S3 |
-| S4 Session flow on TV | not started | | |
+| S4 Session flow on TV | done | e2e s4-session: scripted phone (Node ws; synthetic landmarks through the real sit-to-stand engine) drives a 3-move session on the emulator; screenshots docs/screens/s4-*.png (safety, home, intro, live, rest, finish, paused); TTS lines verified via logcat tag SteadyUpTts. Gradle S4SessionTest: machine, 5 s speech gate, plan caps, plain-words check. | S4 |
 | S5 All five moves | not started | | |
 | S6 History and family page | not started | | |
 | S7 AI weekly plan | not started | | |
@@ -34,6 +34,11 @@
 - S2: e2e phones are closed after each test (tests/phone.ts); leaked camera pages starved CPU and made the next test flaky.
 - S3: a rep = seated -> standing -> seated (spec). Starting standing, the first sit down is not a rep.
 - S3: engine is wired into the phone live loop (sends rep / cue / out-of-view state); the TV does not show reps until S4.
+- S4: TV session is a pure Kotlin state machine (SessionMachine) with injected time; Android only renders and speaks. First-run safety flag lives in SharedPreferences.
+- S4: speech gate = at most one cue per 5 s; fixed lines (before each set, pause, finish) always play and restart the clock. TTS failure never blocks the session (screen still shows the words).
+- S4: scripted phone (tests/scriptedPhone.ts) is a labelled stand-in for the phone page: sit-to-stand sets use the real engine on synthetic frames; other moves send scripted reps until S5.
+- S4: test hooks: adb intent extras `plan` and `restSec`; logcat tags SteadyUpFlow (screen=, shown=), SteadyUpTts.
+- S4: Home shows only Start for now; This week (S6) and Move together (S8) buttons arrive with their slices.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds
