@@ -4,9 +4,29 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SteadyUp</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 20px/1.4 system-ui, sans-serif; background: #101820; color: #fff; }
+  main { max-width: 480px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 32px; margin: 0 0 8px; }
+  input { font: 36px monospace; letter-spacing: 8px; width: 100%; box-sizing: border-box; padding: 12px; text-align: center; border-radius: 12px; border: 3px solid #5fa8d3; background: #fff; color: #101820; }
+  button { font: 600 24px system-ui; width: 100%; margin-top: 16px; padding: 16px; border-radius: 12px; border: 0; background: #5fa8d3; color: #101820; }
+  #status { margin-top: 16px; font-size: 22px; min-height: 2em; }
+  #status.ok { color: #7bdc8f; font-weight: 700; }
+  #status.bad { color: #ffb4a2; }
+  .hidden { display: none; }
+</style>
 </head>
 <body>
-<main id="app"><h1>Hello from SteadyUp</h1><p id="status">Getting ready…</p></main>
+<main id="app">
+  <h1>SteadyUp</h1>
+  <section id="join">
+    <p>Type the 6 numbers from your TV.</p>
+    <input id="code" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Number from your TV" />
+    <button id="joinBtn" type="button">Join</button>
+  </section>
+  <p id="status" role="status">Ready.</p>
+</main>
 <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

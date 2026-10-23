@@ -5,7 +5,7 @@ import { endpoints } from "../endpoints";
 test("S0 deployed phone page loads over HTTPS", async ({ page }) => {
   expect(endpoints.webUrl.startsWith("https://")).toBe(true);
   await page.goto(endpoints.webUrl);
-  await expect(page.locator("h1")).toHaveText("Hello from SteadyUp");
+  await expect(page.locator("h1")).toHaveText("SteadyUp");
   await expect(page.locator("#status")).toHaveText("Ready.");
   await page.screenshot({ path: "docs/screens/s0-phone.png" });
 });

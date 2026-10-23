@@ -3,7 +3,7 @@
 | Slice | Status | Proof (command + result) | Commit |
 | --- | --- | --- | --- |
 | S0 Walking skeleton | done | `npm run verify` exit 0, S0 PASS (7 checks); docs/screens/s0-tv.png, s0-phone.png; deployed WS echo + HTTPS page e2e | S0 |
-| S1 Pairing | not started | | |
+| S1 Pairing | done | `npm run verify` exit 0: S1 PASS (server unit: code, join, expired, reused, dead TV; Gradle reducer tests; e2e: Playwright phone joins with code read from adb logcat, TV screenshots docs/screens/s1-tv-code.png, s1-tv-connected.png) | S1 |
 | S2 Live mirror | not started | | |
 | S3 Rep engine: sit to stand | not started | | |
 | S4 Session flow on TV | not started | | |
@@ -25,6 +25,9 @@
 - S2 latency method: TV echoes phone timestamp, phone halves round trip (clocks differ).
 - verify: tests are mapped to slices by filename/class prefix (s3-*.test.ts, S4*Test.kt, "S5 ..." e2e titles). Emulator missing = BLOCKED note, not failure.
 - Emulator screenshot waits 9 s (cold start Displayed ~6 s).
+- S1: TV pairing code is read by tests with `adb logcat -s SteadyUpPair` (no test endpoint). Phone page reads wsUrl from ./config.json (written by CDK, no rebuild per deploy).
+- S1: join refuses a TV that already disconnected without burning the code; codes use crypto.randomInt; relay conn reads are consistent.
+- S1: TV never shows OK-button text; it refreshes the number itself.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds

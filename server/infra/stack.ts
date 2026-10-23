@@ -59,7 +59,10 @@ export class SteadyUpStack extends cdk.Stack {
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
     new s3deploy.BucketDeployment(this, "DeploySite", {
-      sources: [s3deploy.Source.asset(path.join(import.meta.dirname, "../../web/dist"))],
+      sources: [
+        s3deploy.Source.asset(path.join(import.meta.dirname, "../../web/dist")),
+        s3deploy.Source.jsonData("config.json", { wsUrl: stage.url }), // runtime config: the page reads it, no rebuild per deploy
+      ],
       destinationBucket: bucket,
       distribution: cdn,
       distributionPaths: ["/*"],

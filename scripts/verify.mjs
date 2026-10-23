@@ -48,7 +48,7 @@ if (fs.existsSync(gdir)) for (const f of fs.readdirSync(gdir).filter((x) => x.en
 step("gradle test", g.status === 0);
 
 // 5 emulator (blocked is reported loudly but does not fail verify, per CLAUDE.md)
-const e = sh("node", ["scripts/emulator-check.mjs", "s0"]);
+const e = sh("node", ["scripts/emulator-check.mjs", "verify"]);
 const emuNote = e.status === 2 ? "BLOCKED: emulator not running" : "";
 step("emulator", e.status === 0 || e.status === 2, emuNote);
 if (e.status === 0) results.push({ slice: 0, name: "emulator install+launch+screenshot", ok: true });
