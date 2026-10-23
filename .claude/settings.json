@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(aws *)",
+      "Bash(cdk *)",
+      "Bash(adb *)",
+      "Bash(emulator *)",
+      "Bash(./gradlew *)",
+      "Bash(android/gradlew *)",
+      "Bash(ffmpeg *)",
+      "Bash(docker *)",
+      "Bash(curl *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(aws iam *)",
+      "Bash(aws organizations *)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
