@@ -32,6 +32,8 @@
 
 **Last round (08:00-08:35):** a stricter measurement (92 px) found the chair result button label clipped; fixed by a compact layout. Final `npm run verify` on main: exit 0, all slices PASS, S9 53, Lighthouse 100, 133 unit tests. Measured smallest TV text per screen: docs/text-sizes.json (min 94 px, 40 sp = 93 px). `submission-v1` tag is on the remote (a725207). `submission-v2` moved to the final commit.
 
+**Last subagent screenshot review (after the final layout fixes, using the measured text sizes as ground truth):** 29 rows fully PASS, 2 pass every visual check but are not in the measured file (splash and Connected screens), 1 FAIL: s1-tv-code shows the long CloudFront address as the typed fallback (a tech string that wraps ".net" onto a second line). Left as is on purpose: without it a person who cannot scan the QR has no way in, and a friendlier address needs a real domain (first item in docs/WAKE-UP.md's open list). Other notes (CDC wording is the CDC's own and the user's required text; crowded finish screen; 97-103 px side margins) are logged in docs/TV-REVIEW.md. No code changed after the last green verify.
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
