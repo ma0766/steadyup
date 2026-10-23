@@ -11,11 +11,11 @@ const roomCode = async () => {
   for (let i = 0; i < 40; i++) { const m = [...logcat("SteadyUpFlow").matchAll(/room=(\d{6})/g)].pop(); if (m) return m[1]; await sleep(500); }
   throw new Error("TV never opened a room");
 };
-// Home -> arrow down to "Move together" -> OK
+// Home -> arrow right to "Move together" -> OK
 async function openTogether() {
   await waitScreen("safety"); pressOk();
   await waitScreen("home"); await sleep(800);
-  pressKey("KEYCODE_DPAD_DOWN"); await sleep(500); pressOk();
+  pressKey("KEYCODE_DPAD_RIGHT"); await sleep(500); pressOk(); // 2x2 grid: Move together is right of Start
   await waitScreen("together");
 }
 

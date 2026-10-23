@@ -21,7 +21,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export const handler = async (event: APIGatewayProxyWebsocketEventV2): Promise<APIGatewayProxyResultV2> => {
   const { routeKey, connectionId, domainName, stage } = event.requestContext;
   const api = clientFor(`https://${domainName}/${stage}`);
+  // WebSocket events carry the caller's address in requestContext.identity; wrong-number tries are counted per address
+  const addr = (event.requestContext as unknown as { identity?: { sourceIp?: string } }).identity?.sourceIp ?? "unknown";
   const deps: Deps = {
+    addr,
     store,
     now: Date.now,
     genCode: randomCode,

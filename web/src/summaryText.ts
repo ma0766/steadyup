@@ -2,6 +2,7 @@
 export type Summary = {
   today: string; weekSessions: number; prevWeekSessions: number; streak: number;
   days: { day: string; sessions: number; reps: number }[];
+  chair?: { day: string; score: number }[];
   last: { day: string; totals: { label: string; done: number; unit: "reps" | "seconds" }[] } | null;
 };
 
@@ -24,4 +25,16 @@ export function lastLines(s: Summary): string[] {
 }
 export function shortDay(day: string): string {
   return new Date(day + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "narrow", timeZone: "UTC" });
+}
+
+/** CDC 30-second chair stand: how many full stands in 30 seconds. Shown as a trend, never as a verdict. */
+export function chairNowLine(s: Summary): string {
+  const last = s.chair?.at(-1);
+  return last ? `${plural(last.score, "stand", "stands")} in 30 seconds` : "";
+}
+export function chairCompareLine(s: Summary): string {
+  const c = s.chair ?? [];
+  if (c.length < 2) return "First check saved.";
+  const [prev, now] = [c.at(-2)!.score, c.at(-1)!.score];
+  return now > prev ? `Up from ${prev} last time.` : now < prev ? `Down from ${prev} last time.` : `Same as last time (${prev}).`;
 }

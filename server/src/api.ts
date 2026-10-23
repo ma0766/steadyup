@@ -12,7 +12,7 @@ export const SetBody = z.object({
   home: z.string().regex(HOME),
   session: z.string().min(1).max(40).regex(/^[A-Za-z0-9_-]+$/),
   idx: z.number().int().min(0).max(99),
-  move: z.enum(["sit_to_stand", "heel_raise", "side_leg_raise", "march", "tandem_hold"]),
+  move: z.enum(["chair_stand_30", "sit_to_stand", "heel_raise", "side_leg_raise", "march", "tandem_hold"]),
   side: z.enum(["left", "right"]).optional(),
   target: z.number().int().min(1).max(60),
   done: z.number().int().min(0).max(60),

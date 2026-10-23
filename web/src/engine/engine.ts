@@ -1,11 +1,12 @@
 // Engine = smoothing + confidence gate + one move's state machine.
 import { type EngineEvent, type Frame, type Landmark, type MoveId, MIN_VISIBILITY } from "./types";
-import { SMOOTHING_ALPHA } from "./thresholds";
+import { SMOOTHING_ALPHA, type StandBands } from "./thresholds";
 import { sitToStand } from "./sitToStand";
 import { heelRaise } from "./heelRaise";
 import { sideLegRaise } from "./sideLegRaise";
 import { march } from "./march";
 import { tandemHold } from "./tandemHold";
+import { chairStand30 } from "./chairStand";
 
 export interface MoveLogic {
   id: MoveId;
@@ -22,10 +23,11 @@ export interface MoveEngine {
   readonly count: number;
 }
 
-export type EngineOptions = { alpha?: number; side?: "left" | "right" };
+export type EngineOptions = { alpha?: number; side?: "left" | "right"; bands?: StandBands };
 
-const LOGIC: Record<MoveId, (side: "left" | "right") => MoveLogic> = {
-  sit_to_stand: () => sitToStand(),
+const LOGIC: Record<MoveId, (side: "left" | "right", bands?: StandBands) => MoveLogic> = {
+  sit_to_stand: (_s, bands) => sitToStand(bands),
+  chair_stand_30: (_s, bands) => chairStand30(bands),
   heel_raise: () => heelRaise(),
   side_leg_raise: (side) => sideLegRaise(side),
   march: () => march(),
@@ -37,7 +39,7 @@ export function createEngine(move: MoveId, opts: EngineOptions | number = {}): M
   const alpha = o.alpha ?? SMOOTHING_ALPHA;
   const make = LOGIC[move];
   if (!make) throw new Error(`unknown move: ${move}`);
-  const logic = make(o.side ?? "left");
+  const logic = make(o.side ?? "left", o.bands);
   let prev: Landmark[] | null = null;
   let inView = true;
 

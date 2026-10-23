@@ -2,7 +2,7 @@
 export type Landmark = { x: number; y: number; visibility: number };
 export type Frame = { t: number; lm: Landmark[] | null }; // t in ms; null = nobody detected
 
-export type MoveId = "sit_to_stand" | "heel_raise" | "side_leg_raise" | "march" | "tandem_hold";
+export type MoveId = "sit_to_stand" | "chair_stand_30" | "heel_raise" | "side_leg_raise" | "march" | "tandem_hold";
 
 export type EngineEvent =
   | { type: "rep"; move: MoveId; count: number; side?: "left" | "right" }

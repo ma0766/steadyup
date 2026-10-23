@@ -1,5 +1,5 @@
 // Family page: weekly summary by invite link (?h=<home id>). Refreshes itself so a finished session shows up quickly.
-import { compareLine, lastLines, sessionsLine, shortDay, streakLine, type Summary } from "./summaryText";
+import { chairCompareLine, chairNowLine, compareLine, lastLines, sessionsLine, shortDay, streakLine, type Summary } from "./summaryText";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const home = new URLSearchParams(location.search).get("h") ?? "";
@@ -20,6 +20,14 @@ function render(s: Summary) {
   const max = Math.max(1, ...s.days.map((d) => d.reps));
   $("bars").innerHTML = s.days.map((d) =>
     `<div class="bar"><i class="${d.sessions ? "on" : ""}" style="height:${Math.round((d.reps / max) * 72)}px"></i>${shortDay(d.day)}</div>`).join("");
+  const chair = s.chair ?? [];
+  $("chair-card").classList.toggle("hidden", chair.length === 0);
+  if (chair.length) {
+    $("chair-now").textContent = chairNowLine(s);
+    $("chair-compare").textContent = chairCompareLine(s);
+    const top = Math.max(1, ...chair.map((c) => c.score));
+    $("chair-bars").innerHTML = chair.map((c) => `<div class="bar"><i class="on" style="height:${Math.round((c.score / top) * 72)}px"></i>${c.score}</div>`).join("");
+  }
   $("last").innerHTML = lastLines(s).map((l) => `<li>${l.replace(/[<>&]/g, "")}</li>`).join("");
 }
 

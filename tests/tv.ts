@@ -15,6 +15,8 @@ export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Fresh TV app launch; returns the newest pairing number it logged (the app may refresh it once). */
 export async function tvCode(extras: string[] = []): Promise<string> {
+  // scripted tests have no body to learn from, so skip the two slow stands unless a test asks for them
+  if (!extras.includes("calibrate")) extras = [...extras, "--ez", "calibrate", "false"];
   adb("logcat", "-c");
   adb("shell", "pm", "clear", "com.steadyup.tv");
   adb("shell", "am", "start", "-n", "com.steadyup.tv/.MainActivity", ...extras);
@@ -41,11 +43,28 @@ export function tvScreenshot(name: string): Buffer {
 /** Remote control OK button. */
 export const pressOk = () => adb("shell", "input", "keyevent", "KEYCODE_DPAD_CENTER");
 
-/** Wait until the TV app logs that it is showing this screen (tag SteadyUpFlow). */
+/** Bounds of whatever has D-pad focus right now (UI hierarchy dump). Empty = nothing is focused. */
+export function tvFocused(): string[] {
+  adb("shell", "uiautomator", "dump", "/sdcard/ui.xml");
+  const xml = adb("exec-out", "cat", "/sdcard/ui.xml");
+  return [...xml.matchAll(/<node [^>]*focused="true"[^>]*bounds="(\[[^"]+)"/g)].map((m) => m[1]).filter((b) => !b.startsWith("[0,0][1920,1080]"));
+}
+// Screens with something to press: a focus ring must be on one of them, or the remote's OK press does nothing visible.
+const NEEDS_FOCUS = /^(safety|home|week|together|calibrate|chair-ask|chair-no|chair-about|chair-how|chair-result|paused|finish|intro:\d+|rest:\d+)$/;
+
+/** Wait until the TV app logs that it is showing this screen (tag SteadyUpFlow). Screens with buttons must also show focus. */
 export async function waitScreen(name: string, timeoutMs = 60_000): Promise<void> {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
-    if (logcat("SteadyUpFlow").includes(`shown=${name}`)) { await sleep(700); return; } // let the frame draw
+    if (logcat("SteadyUpFlow").includes(`shown=${name}`)) {
+      await sleep(700); // let the frame draw
+      if (NEEDS_FOCUS.test(name)) {
+        let ok = false;
+        for (let i = 0; i < 6 && !ok; i++) { ok = tvFocused().length > 0; if (!ok) await sleep(500); }
+        if (!ok) throw new Error(`no D-pad focus is visible on screen "${name}"`);
+      }
+      return;
+    }
     await sleep(300);
   }
   throw new Error(`TV never showed ${name}. Log:\n${logcat("SteadyUpFlow")}`);

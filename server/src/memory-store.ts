@@ -1,4 +1,4 @@
-import type { CodeRec, ConnRec, RoomRec, Store } from "./pairing";
+import type { CodeRec, ConnRec, FailRec, RoomRec, Store } from "./pairing";
 import type { SetRec } from "./summary";
 import type { Plan } from "./plan";
 
@@ -9,6 +9,7 @@ export function memoryStore(): Store {
   const sets = new Map<string, SetRec>();
   const plans = new Map<string, Plan>();
   const rooms = new Map<string, RoomRec>();
+  const fails = new Map<string, FailRec>();
   return {
     async putCode(r) { if (codes.has(r.code)) return false; codes.set(r.code, { ...r }); return true; },
     async getCode(c) { const r = codes.get(c); return r && { ...r }; },
@@ -21,6 +22,9 @@ export function memoryStore(): Store {
     async putConn(r) { conns.set(r.connId, { ...r }); },
     async delConn(id) { conns.delete(id); },
     async putSet(home, r) { sets.set(`${home}|${r.day}|${r.session}|${r.idx}`, { ...r }); },
+    async getFail(a) { const r = fails.get(a); return r && { ...r }; },
+    async putFail(a, r) { fails.set(a, { ...r }); },
+    async delRoom(c) { rooms.delete(c); },
     async putRoom(r) { if (rooms.has(r.code)) return false; rooms.set(r.code, { ...r, guests: [...r.guests] }); return true; },
     async getRoom(c) { const r = rooms.get(c); return r && { ...r, guests: [...r.guests] }; },
     async addGuest(c, conn) { rooms.get(c)?.guests.push(conn); },

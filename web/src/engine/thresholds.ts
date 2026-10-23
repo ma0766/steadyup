@@ -7,7 +7,11 @@ export const SIT_TO_STAND = {
   /** Knee moves toward the body midline by more than this many torso lengths (vs the ankle) = knees caving. */
   kneeInward: 0.12,
 };
+export type StandBands = { seatedBelow: number; standingAbove: number };
+export const DEFAULT_BANDS: StandBands = { seatedBelow: SIT_TO_STAND.seatedBelow, standingAbove: SIT_TO_STAND.standingAbove };
 export const SMOOTHING_ALPHA = 0.5;
+/** CDC 30-second chair stand: arms crossed on the chest. Wrists this far below the shoulders (torso lengths) = arms came uncrossed. */
+export const CHAIR_STAND = { wristsBelowShoulderT: 0.75 };
 
 // Tuned on the synthetic fixtures in fixtures.ts; real-person check is on the human list.
 export const HEEL_RAISE = { raiseFrac: 0.03, releaseFrac: 0.015, leanDeg: 15, stuckMs: 4000 }; // of leg length; torso lean in degrees

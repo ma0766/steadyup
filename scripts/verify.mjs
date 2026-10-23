@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const SLICES = ["S0 Walking skeleton","S1 Pairing","S2 Live mirror","S3 Rep engine: sit to stand","S4 Session flow on TV",
-  "S5 All five moves","S6 History and family page","S7 AI weekly plan","S8 Move together"];
+  "S5 All five moves","S6 History and family page","S7 AI weekly plan","S8 Move together","S9 World-class pass"];
 const results = []; // {slice, name, ok}
 const steps = [];
 const sh = (cmd, args, opts = {}) => spawnSync(cmd, args, { stdio: "inherit", encoding: "utf8", ...opts });

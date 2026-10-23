@@ -1,6 +1,6 @@
 {
-  "wsUrl": "wss://fyapc6i4z5.execute-api.us-east-1.amazonaws.com/live",
-  "webUrl": "https://dh3aa2spgh07i.cloudfront.net",
-  "apiUrl": "https://ey3j3pj2e4.execute-api.us-east-1.amazonaws.com",
-  "tableName": "SteadyUp-Data666C94C7-18TGTXJ51OP1X"
+  "wsUrl": "wss://s8k1rukc6a.execute-api.us-east-1.amazonaws.com/live",
+  "webUrl": "https://d3ltiulf1p49il.cloudfront.net",
+  "apiUrl": "https://4dwbdgeqmj.execute-api.us-east-1.amazonaws.com",
+  "tableName": "SteadyUp-wc-Data666C94C7-1TP0UBSS8WO6E"
 }
