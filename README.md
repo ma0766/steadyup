@@ -52,7 +52,7 @@ Phone or laptop browser (web/)          AWS us-east-1 (server/)               Fi
 
 - **Mom (72)** uses only the remote. She scans a QR with her phone, leans it on a shelf, does two slow stands so SteadyUp learns how *she* moves (any height, any distance from the camera), and follows the stick figure.
 - **Ana (her daughter)** opens a family link (a QR on the TV), sees the week, the streak and the chair stand trend, and can **move together** from her own phone and camera.
-- **Judges** can try it with a laptop webcam and no phone: open the phone page on the laptop and type the number the TV shows.
+- **Judges** can try it with a laptop webcam and no phone: open https://dh3aa2spgh07i.cloudfront.net on the laptop and type the number the TV shows.
 
 ### The five chair-supported moves
 Sit to stand, heel raises (hands on chair), side leg raise (each side), marching in place, tandem stance hold. Each has one plain form cue. Counting happens on the phone; the TV only displays.
@@ -101,7 +101,7 @@ node scripts/make-fixtures.mjs   # downloads the fake-camera video used by the b
 FAQ: "an emulator (Android TV Emulator or the Fire TV/Vega simulator) is fine." We use the Android TV emulator, API 30.
 1. Android Studio -> Device Manager -> Create device -> TV -> Television (1080p) -> system image API 30 -> start it.
 2. `source scripts/env.sh` (edit the `ADB` path to your adb), then `npm run apk` builds and installs the app and launches it.
-3. The TV shows a QR and a 6-number code. On a laptop or phone open the address printed under the code, type the number, and allow the camera.
+3. The TV shows a QR and a 6-number code. On a laptop or phone open the SteadyUp page (the demo copy is at https://dh3aa2spgh07i.cloudfront.net; your own copy's address is in `config/endpoints.json`), type the number the TV shows, and allow the camera. A phone that scans the QR needs no typing at all.
 4. Press OK on the remote (or Enter on the emulator keyboard) through the safety screen and Home. "Start today's 10 minutes" begins with two slow stands, then the first move.
 
 ### Your own cloud copy

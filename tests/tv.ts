@@ -20,7 +20,8 @@ export async function tvCode(extras: string[] = []): Promise<string> {
   adb("logcat", "-c");
   adb("shell", "pm", "clear", "com.steadyup.tv");
   adb("shell", "am", "start", "-n", "com.steadyup.tv/.MainActivity", ...extras);
-  for (let i = 0; i < 40; i++) {
+  // the first launch after a fresh install is slow (the system optimises the app), so allow up to 2 minutes
+  for (let i = 0; i < 120; i++) {
     if (/code=\d{6}/.test(logcat("SteadyUpPair"))) {
       await sleep(3000);
       return [...logcat("SteadyUpPair").matchAll(/code=(\d{6})/g)].pop()![1];
@@ -31,7 +32,11 @@ export async function tvCode(extras: string[] = []): Promise<string> {
 }
 
 export function tvScreenshotBuffer(): Buffer {
-  return execFileSync(ADB, ["exec-out", "screencap", "-p"], { maxBuffer: 50_000_000 });
+  // adb.exe through WSL sometimes fails a screencap with a socket error: retry before giving up
+  for (let attempt = 0; ; attempt++) {
+    try { return execFileSync(ADB, ["exec-out", "screencap", "-p"], { maxBuffer: 50_000_000 }); }
+    catch (e) { if (attempt >= 3) throw e; execFileSync("sleep", ["1"]); }
+  }
 }
 export function tvScreenshot(name: string): Buffer {
   fs.mkdirSync("docs/screens", { recursive: true });

@@ -6,7 +6,7 @@ Record the Android TV emulator window plus a phone (or laptop) screen. Two takes
 1. Start the emulator (Television 1080p, API 30) and leave it running.
 2. In WSL: `cd ~/steadyup && source scripts/env.sh && npm run apk` (installs and launches the app).
 3. Reset to a first run so the safety screen shows: `"$ADB" shell pm clear com.steadyup.tv`, then `"$ADB" shell am start -n com.steadyup.tv/.MainActivity`.
-4. On a phone: open the address shown under the QR. Prop the phone against a shelf or a book, facing a sturdy chair, 2 m away, with your whole body in view. A chair **without arms**, against a wall, for the chair stand check.
+4. On a phone: scan the QR on the TV (or open https://dh3aa2spgh07i.cloudfront.net and type the number). Prop the phone against a shelf or a book, facing a sturdy chair, 2 m away, with your whole body in view. A chair **without arms**, against a wall, for the chair stand check.
 5. History for the family page (disclose it in the video description: "sample history for the demo"): open the app once, then `node scripts/seed-demo-history.mjs`. It prints the family link. Without it the page shows today only.
 6. Remote keys on the emulator: arrow keys = arrows, Enter = OK, Esc = Back. The Home screen is a 2 x 2 grid: **Start** (top left), **Move together** (top right), **This week** (bottom left), **Chair stand check** (bottom right).
 
@@ -15,7 +15,7 @@ Record the Android TV emulator window plus a phone (or laptop) screen. Two takes
 **0:00 - The problem (15 s, slide or README table, voice-over).** "1 in 4 adults over 65 fall every year. Studies link balance exercise to about a quarter fewer falls. But a coach costs thousands. SteadyUp is that coach on the Fire TV you already own." Put the CDC and Cochrane lines on screen.
 
 **0:15 - Mom pairs (20 s).**
-1. TV shows the QR and the 6-number code. Hold the phone up so the camera reads the QR (or type the number on the phone page).
+1. TV shows the QR and the 6-number code. Hold the phone up so the camera reads the QR (or open https://dh3aa2spgh07i.cloudfront.net and type the number).
 2. Phone says "Connected". TV says "Connected" for a moment, then the safety screen. Press **OK** on "I understand". Lean the phone on the shelf.
 
 **0:35 - It learns how she moves (20 s).**
