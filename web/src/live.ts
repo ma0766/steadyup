@@ -34,9 +34,13 @@ export async function startLive(
   // The TV picks the move ("move" message); counting lives here on the phone. Nothing counts until a set starts.
   let engine: MoveEngine | null = null;
   let moveLabel = ""; // kept for debugging in the console
+  // Counts are cumulative, so re-sending the latest one every second is harmless and heals any dropped message.
+  let lastCount: { move: string; count: number } | null = null;
+  const resend = setInterval(() => { if (engine && lastCount) send({ type: "rep", ...lastCount }); }, 1000);
   const forward = (events: EngineEvent[]) => {
     for (const e of events) {
-      if (e.type === "rep") send({ type: "rep", move: e.move, count: e.count });
+      if (e.type === "rep") { lastCount = { move: e.move, count: e.count }; send({ type: "rep", move: e.move, count: e.count }); }
+      else if (e.type === "hold") { lastCount = { move: e.move, count: e.seconds }; send({ type: "rep", move: e.move, count: e.seconds }); } // holds count seconds
       else if (e.type === "cue") send({ type: "cue", text: e.text });
       else if (e.type === "low-confidence") send({ type: "state", state: "out-of-view" });
       else if (e.type === "back-in-view") send({ type: "state", state: "in-view" });
@@ -68,12 +72,13 @@ export async function startLive(
 
   return {
     // returns an error sentence if this move cannot be counted
-    setMove: (move, _side) => {
-      try { engine = createEngine(move as MoveId); moveLabel = move; return null; }
+    setMove: (move, side) => {
+      lastCount = null;
+      try { engine = createEngine(move as MoveId, { side: side === "right" ? "right" : "left" }); moveLabel = move; return null; }
       catch { engine = null; return "I can't count that one yet."; }
     },
-    endSet: () => { engine?.reset(); engine = null; },
-    stop: () => { running = false; stream.getTracks().forEach((t) => t.stop()); },
+    endSet: () => { engine?.reset(); engine = null; lastCount = null; },
+    stop: () => { running = false; clearInterval(resend); stream.getTracks().forEach((t) => t.stop()); },
     // TV echoes our timestamp; clocks differ so we use round trip / 2 (one-way estimate).
     onAck: (t) => { tele.latenciesMs.push((Date.now() - t) / 2); },
   };

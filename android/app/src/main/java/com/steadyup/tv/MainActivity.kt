@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var speaker: TtsSpeaker
     private lateinit var gate: SpeechGate
     private lateinit var plan: List<PlanItem>
+    private var setSeq = 0                  // numbers each set so the phone can ignore repeats of a start message
+    private var activeMoveMsg: String? = null
+    private var ticks = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +110,8 @@ class MainActivity : ComponentActivity() {
         val now = SystemClock.elapsedRealtime()
         val before = screen.logName()
         gate.tick(now)
+        // a start message can be lost on the way: repeat it every 2 s while the set is live (phone ignores repeats by seq)
+        if (ev == Ev.Tick && screen is Screen.Live && activeMoveMsg != null && ++ticks % 8 == 0) relay.send(activeMoveMsg!!)
         val fx = machine.on(ev, now)
         screen = machine.screen
         if (screen.logName() != before) {
@@ -115,9 +120,12 @@ class MainActivity : ComponentActivity() {
         }
         for (f in fx) when (f) {
             is Fx.Speak -> gate.say(f.text, now, f.force)
-            is Fx.StartSet -> relay.send(JSONObject().put("type", "move").put("move", f.item.move).put("target", f.item.target)
-                .put("side", f.item.side ?: JSONObject.NULL).toString())
-            Fx.EndSet -> relay.send("""{"type":"state","state":"set-end"}""")
+            is Fx.StartSet -> {
+                activeMoveMsg = JSONObject().put("type", "move").put("move", f.item.move).put("target", f.item.target)
+                    .put("side", f.item.side ?: JSONObject.NULL).put("seq", ++setSeq).toString()
+                relay.send(activeMoveMsg!!)
+            }
+            Fx.EndSet -> { activeMoveMsg = null; relay.send("""{"type":"state","state":"set-end"}""") }
             Fx.SafetyDone -> getSharedPreferences("steadyup", MODE_PRIVATE).edit().putBoolean("safety_done", true).apply()
         }
     }

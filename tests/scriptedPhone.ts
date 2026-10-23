@@ -1,9 +1,10 @@
 // A scripted phone for TV flow tests: a Node WebSocket client that pairs like the phone page does, then plays a set
-// when the TV asks for one. Sit-to-stand sets run SYNTHETIC landmark frames through the real engine; other moves send
-// scripted reps until their engines exist (S5). Video is never involved.
+// when the TV asks for one. Every set plays SYNTHETIC landmark frames through the real engine for that move,
+// faster than real time. Video is never involved.
 import WebSocket from "ws";
 import { createEngine } from "../web/src/engine/engine";
-import { sitToStandFrames } from "../web/src/engine/fixtures";
+import { heelRaiseFrames, marchFrames, sideLegRaiseFrames, sitToStandFrames, tandemFrames } from "../web/src/engine/fixtures";
+import type { MoveId } from "../web/src/engine/types";
 import type { Frame } from "../web/src/engine/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -11,7 +12,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export class ScriptedPhone {
   private ws!: WebSocket;
   private runId = 0;
+  private lastSeq: number | undefined;
   autoRun = true;
+  frameMs = 12; // pacing per 33 ms fixture frame: about 2.7x faster than real time
   kneesCaveFirstSet = true;
   private sets = 0;
   moves: string[] = [];
@@ -28,7 +31,7 @@ export class ScriptedPhone {
         const m = JSON.parse(raw.toString());
         if (m.type === "paired") { clearTimeout(t); resolve(); }
         else if (m.type === "error") { clearTimeout(t); reject(new Error(m.message)); }
-        else if (m.type === "move") { this.moves.push(m.move); if (this.autoRun) void this.playSet(m.move, m.target); }
+        else if (m.type === "move") { if (m.seq !== undefined && m.seq === this.lastSeq) return; this.lastSeq = m.seq; console.log(`[phone] move ${m.move} ${m.side ?? ""} target ${m.target}`); this.moves.push(m.move); if (this.autoRun) void this.playSet(m.move, m.target, m.side ?? null); }
         else if (m.type === "state" && m.state === "set-end") this.runId++; // stop the current set
       });
     });
@@ -46,26 +49,36 @@ export class ScriptedPhone {
     this.send({ type: "pose", t: Date.now(), p });
   }
 
-  private async playSet(move: string, target: number) {
+  private framesFor(move: string, side: string | null, target: number, cave: boolean): Frame[] {
+    const noise = 0.003;
+    switch (move) {
+      case "sit_to_stand": return sitToStandFrames({ reps: target, cave: cave ? 0.2 : 0, noise });
+      case "heel_raise": return heelRaiseFrames({ reps: target, noise });
+      case "side_leg_raise": return sideLegRaiseFrames({ reps: target, side: side === "right" ? "right" : "left", noise });
+      case "march": return marchFrames({ lifts: target, noise });
+      case "tandem_hold": return tandemFrames({ seconds: target, noise });
+      default: throw new Error(`no fixture for ${move}`);
+    }
+  }
+
+  private async playSet(move: string, target: number, side: string | null) {
     const id = ++this.runId;
     const first = this.sets++ === 0;
-    const frames = sitToStandFrames({ reps: Math.max(target, 1), cave: first && this.kneesCaveFirstSet && move === "sit_to_stand" ? 0.2 : 0, noise: 0.003 });
-    if (move === "sit_to_stand") {
-      const engine = createEngine("sit_to_stand");
-      for (let i = 0; i < frames.length && id === this.runId; i++) {
-        if (i % 3 === 0) this.sendPose(frames[i]);
-        for (const e of engine.push(frames[i])) {
-          if (e.type === "rep") this.send({ type: "rep", move, count: e.count });
-          else if (e.type === "cue") this.send({ type: "cue", text: e.text });
-        }
-        await sleep(12);
+    const frames = this.framesFor(move, side, Math.max(target, 1), first && this.kneesCaveFirstSet && move === "sit_to_stand");
+    const engine = createEngine(move as MoveId, { side: side === "right" ? "right" : "left" });
+    let lastCount = 0, lastSent = 0;
+    for (let i = 0; i < frames.length && id === this.runId; i++) {
+      if (i % 3 === 0) this.sendPose(frames[i]);
+      for (const e of engine.push(frames[i])) {
+        if (e.type === "rep") { lastCount = e.count; this.send({ type: "rep", move, count: e.count }); }
+        else if (e.type === "hold") { lastCount = e.seconds; this.send({ type: "rep", move, count: e.seconds }); }
+        else if (e.type === "cue") this.send({ type: "cue", text: e.text });
       }
-    } else {
-      // scripted reps (engine for this move arrives in S5); figure still moves
-      for (let n = 1; n <= target && id === this.runId; n++) {
-        for (let k = 0; k < 8 && id === this.runId; k++) { this.sendPose(frames[(n * 8 + k) % frames.length]); await sleep(50); }
-        this.send({ type: "rep", move, count: n });
-      }
+      if (lastCount > 0 && i % 80 === 0) this.send({ type: "rep", move, count: lastCount }); // same heal-by-resend as the phone page
+      await sleep(this.frameMs);
     }
+    // the last count is re-sent until the TV ends the set (it sends set-end), like the phone page does
+    while (id === this.runId && lastCount > 0 && lastSent++ < 6) { this.send({ type: "rep", move, count: lastCount }); await sleep(500); }
+    console.log(`[phone] set ${move} ended: aborted=${id !== this.runId} lastCount=${lastCount}/${target}`);
   }
 }

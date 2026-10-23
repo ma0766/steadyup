@@ -7,7 +7,7 @@
 | S2 Live mirror | done | e2e: fake-camera y4m (real person) -> MediaPipe on phone page -> deployed relay -> TV figure (docs/screens/s2-tv-figure.png, two shots differ). Median phone->TV latency 82-85 ms, p95 ~110 ms (docs/LATENCY.md). Gradle S2MirrorTest (parse, smoother, mirror). | S2 |
 | S3 Rep engine: sit to stand | done | vitest web/src/engine/s3-sit-to-stand.test.ts: 10/10 reps exact (jitter, near/far scale), 0 when out of frame or legs hidden, knee cue fires on caving fixture and not on clean; e2e recorder page saves landmark JSON from the fake camera | S3 |
 | S4 Session flow on TV | done | e2e s4-session: scripted phone (Node ws; synthetic landmarks through the real sit-to-stand engine) drives a 3-move session on the emulator; screenshots docs/screens/s4-*.png (safety, home, intro, live, rest, finish, paused); TTS lines verified via logcat tag SteadyUpTts. Gradle S4SessionTest: machine, 5 s speech gate, plan caps, plain-words check. | S4 |
-| S5 All five moves | not started | | |
+| S5 All five moves | done | vitest s5-moves (34 tests incl. 15-seed jitter sweep): positive, negative, low-confidence per move + every cue; e2e s5-full-session: default ten-set plan (all five moves, both sides) completes on the emulator, time-compressed (docs/screens/s5-*.png, s5-session-totals.txt) | S5 |
 | S6 History and family page | not started | | |
 | S7 AI weekly plan | not started | | |
 | S8 Move together | not started | | |
@@ -39,6 +39,10 @@
 - S4: scripted phone (tests/scriptedPhone.ts) is a labelled stand-in for the phone page: sit-to-stand sets use the real engine on synthetic frames; other moves send scripted reps until S5.
 - S4: test hooks: adb intent extras `plan` and `restSec`; logcat tags SteadyUpFlow (screen=, shown=), SteadyUpTts.
 - S4: Home shows only Start for now; This week (S6) and Move together (S8) buttons arrive with their slices.
+- S5: heel raise re-learns its floor after 4 s raised with no return (person stepped back); the TV repeats the set-start message every 2 s with a seq number so a lost message cannot strand the phone.
+- S5: holds report whole seconds as `rep` count; the phone re-sends the latest count every second so a dropped message cannot strand the TV.
+- S5: Lambda relay reuses one API Gateway client per endpoint and retries transient DNS errors (new client per call caused getaddrinfo EBUSY under load, which dropped messages).
+- S5: tests/scriptedPhone.ts now plays all five moves through the real engines on synthetic frames.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds
@@ -46,6 +50,10 @@
 - sit_to_stand seated band: hip height < 1.2 torso lengths; standing band: > 1.5 (gap = hysteresis) — synthetic fixtures (hip height 1.0 seated, 1.8 standing, jitter 0.004, scale 0.55 to 1.3). Not yet checked on a real person: human check.
 - sit_to_stand knee cue: knee closer to midline than ankle by > 0.12 torso lengths — synthetic caving fixture (cave 0.2) fires, clean (cave 0) does not.
 - EMA smoothing alpha 0.5 on phone-side landmarks.
+- heel_raise: raise > 3% of leg length above a slowly-following floor baseline, release below 1.5%; 'Stand tall' at torso lean > 15 deg — synthetic fixtures (lift 0.08 counts, 0.015 does not).
+- side_leg_raise: hip-to-ankle abduction > 20 deg up, < 8 deg back; 'Keep your body still' at torso tilt > 12 deg; only the chosen leg counts, outward only — synthetic fixtures (30 deg counts, 12 deg and the other leg do not).
+- march: knee-to-hip drop under 50% of its learned standing drop = lift, back over 62% to re-arm; same knee twice in a row counts once; 'Hold the chair' when a wrist is 0.4 torso lengths above or 0.6 below hip height for 0.7 s — synthetic fixtures.
+- tandem_hold: ankle x gap <= 0.3 shoulder widths = feet in line (SPEC said 0.08; too tight for a real camera, so tuned up); timer pauses when feet part; sway = hip x range over 1 s > 0.3 torso lengths -> 'Hold the chair, that's fine' (3 s cooldown) — synthetic fixtures (sway 0.25 amplitude fires, 0.01 does not).
 
 ## Blocked on user
 

@@ -24,3 +24,11 @@ export function kneeInward(lm: Landmark[], side: "left" | "right"): number {
   const ankle = lm[side === "left" ? LM.L_ANKLE : LM.R_ANKLE];
   return (Math.abs(ankle.x - midX) - Math.abs(knee.x - midX)) / torsoLength(lm);
 }
+
+/** Lean of the torso from vertical, in degrees (mid-shoulder over mid-hip). */
+export function torsoTiltDeg(lm: Landmark[]): number {
+  const s = mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]), h = mid(lm[LM.L_HIP], lm[LM.R_HIP]);
+  return (Math.atan2(Math.abs(s.x - h.x), Math.abs(h.y - s.y)) * 180) / Math.PI;
+}
+
+export const shoulderWidth = (lm: Landmark[]) => Math.abs(lm[LM.L_SHOULDER].x - lm[LM.R_SHOULDER].x);

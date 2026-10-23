@@ -2,6 +2,10 @@
 import { type EngineEvent, type Frame, type Landmark, type MoveId, MIN_VISIBILITY } from "./types";
 import { SMOOTHING_ALPHA } from "./thresholds";
 import { sitToStand } from "./sitToStand";
+import { heelRaise } from "./heelRaise";
+import { sideLegRaise } from "./sideLegRaise";
+import { march } from "./march";
+import { tandemHold } from "./tandemHold";
 
 export interface MoveLogic {
   id: MoveId;
@@ -18,12 +22,22 @@ export interface MoveEngine {
   readonly count: number;
 }
 
-const LOGIC: Partial<Record<MoveId, () => MoveLogic>> = { sit_to_stand: sitToStand };
+export type EngineOptions = { alpha?: number; side?: "left" | "right" };
 
-export function createEngine(move: MoveId, alpha = SMOOTHING_ALPHA): MoveEngine {
+const LOGIC: Record<MoveId, (side: "left" | "right") => MoveLogic> = {
+  sit_to_stand: () => sitToStand(),
+  heel_raise: () => heelRaise(),
+  side_leg_raise: (side) => sideLegRaise(side),
+  march: () => march(),
+  tandem_hold: () => tandemHold(),
+};
+
+export function createEngine(move: MoveId, opts: EngineOptions | number = {}): MoveEngine {
+  const o: EngineOptions = typeof opts === "number" ? { alpha: opts } : opts;
+  const alpha = o.alpha ?? SMOOTHING_ALPHA;
   const make = LOGIC[move];
-  if (!make) throw new Error(`move not built yet: ${move}`);
-  const logic = make();
+  if (!make) throw new Error(`unknown move: ${move}`);
+  const logic = make(o.side ?? "left");
   let prev: Landmark[] | null = null;
   let inView = true;
 
