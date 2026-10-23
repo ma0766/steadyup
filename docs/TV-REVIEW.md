@@ -1,3 +1,5 @@
+> **Fixed after this review** (screenshots in `docs/screens/` were retaken afterwards and spot-checked by eye): the "Together: N" total moved into the header row so the cue box no longer cuts it; the chair stand result screen is compact so its button has a label; the Home tiles no longer grow when focused (they used to push into the next tile and the safe margin); the timer says "seconds"; the Skip button on the calibration screen is 44 sp; the pairing address is 46 sp. Still true: body text sits close to the 40 sp floor (it passes, with little margin); "CDC lists under N as below average for your age." uses the CDC's own wording on purpose; the pairing address is the typed fallback and needs a real domain to look friendlier.
+
 # TV screenshot accessibility review
 
 Reviewed by eye from the 1920x1080 emulator screenshots (320 dpi, so 40 sp = 80 px). Sizes are estimates from glyph heights (capital height about 0.71 of font size) with +/- 4 px error. Contrast was judged from the visible colours (light text on near-black navy, dark text on light-blue buttons); every pairing I saw is far above 4.5:1. Overall = worst of the four checks.
