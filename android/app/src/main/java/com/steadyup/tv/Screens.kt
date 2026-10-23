@@ -328,13 +328,18 @@ fun ChairAboutScreen(age: Int, sex: Int, onAge: () -> Unit, onSex: () -> Unit, o
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun ChairHowScreen(onReady: () -> Unit) = Page {
-    Text(Sentences.CHAIR_BUTTON, fontSize = 52.sp, fontWeight = FontWeight.Bold, color = Ink.text)
-    Spacer(Modifier.height(8.dp))
-    for (line in listOf(Sentences.CHAIR_HOW_1, Sentences.CHAIR_HOW_2, Sentences.CHAIR_HOW_3, Sentences.CHAIR_HOW_4, Sentences.CHAIR_HOW_5, Sentences.CHAIR_HOW_6))
-        Text(line, fontSize = 40.sp, color = Ink.soft, textAlign = TextAlign.Center)
-    Spacer(Modifier.height(14.dp))
-    BigButton(Sentences.INTRO_GO, onReady, fontSp = 44)
+fun ChairHowScreen(onReady: () -> Unit) {
+    // CDC's six instruction lines at 44 sp. Tighter margins than other screens so the six lines and the button all fit.
+    Column(
+        Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 48.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(Sentences.CHAIR_BUTTON, fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Ink.text)
+        for (line in listOf(Sentences.CHAIR_HOW_1, Sentences.CHAIR_HOW_2, Sentences.CHAIR_HOW_3, Sentences.CHAIR_HOW_4, Sentences.CHAIR_HOW_5, Sentences.CHAIR_HOW_6))
+            Text(line, fontSize = 44.sp, color = Ink.soft, textAlign = TextAlign.Center, lineHeight = 50.sp)
+        Spacer(Modifier.height(8.dp))
+        BigButton(Sentences.INTRO_GO, onReady, fontSp = 44)
+    }
 }
 
 @Composable
