@@ -1,3 +1,5 @@
+> **Update (world-class pass):** read `docs/WAKE-UP.md` first. This is the report for submission-v1 (`git checkout submission-v1`). Since then these limits below were FIXED on `worldclass`: pairing and room numbers now have a wrong-try limit, a set cut short with Back is saved with its real reps, the Together total counts real reps, names with accents are kept, old rooms expire. Still open: no real-person test, no voice on the emulator, one guest per room.
+
 # Morning report
 
 Written for you, in plain words. Everything below was checked by running it, unless it says "not checked".
