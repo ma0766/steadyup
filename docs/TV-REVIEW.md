@@ -1,6 +1,6 @@
 # TV accessibility review
 
-> **Update:** the one FAIL below (s1-tv-code, the raw web address) was fixed afterwards: the pairing screen now shows only the QR and the number. See docs/PROGRESS.md.
+> **Update:** the one FAIL below (s1-tv-code, the raw web address) is fixed and verified: the pairing screen now shows only the QR and the number (screenshot regenerated from the green verify run). See docs/PROGRESS.md.
 
 Text sizes in this review come from the measured data in `docs/text-sizes.json` (smallest text line per screen, read from the running app's UI tree; 40 sp = 93 px, floor is 92 px). Every measured screen is at least 94 px, so text size is PASS wherever the screen is in that file. I did not estimate sizes by eye. The splash, pairing and connected screens are not in the json, so they are marked "not measured". The other columns (contrast, clipping/overlap, focus ring, plain language, 5% safe margin) were judged by looking at each 1920x1080 screenshot. Text-size mapping: s4-3, s4-6, s5-intro-* use `intro`; s4-4, s4-7, s5-live-hold, s9-live-midset, s8 live shots and s2-tv-figure use `live` (same layout); s4-8, s5-finish, s9-finish use `finish`.
 
