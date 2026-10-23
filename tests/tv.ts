@@ -50,18 +50,32 @@ export function tvFocused(): string[] {
   return [...xml.matchAll(/<node [^>]*focused="true"[^>]*bounds="(\[[^"]+)"/g)].map((m) => m[1]).filter((b) => !b.startsWith("[0,0][1920,1080]"));
 }
 /**
- * Measured text size: every text node's height from the UI tree. One line of 40 sp text at 320 dpi (80 px) is about 93 px
- * tall (line height is ~1.17 x the font size), so any text node under 90 px is smaller than the 40 sp floor.
+ * Measured text size: every text node's height from the UI tree. At 320 dpi one line of 40 sp text (80 px) is 93 px tall
+ * (line height is 1.167 x the font size: a 48 sp line measures 112 px). Under 92 px means text smaller than the 40 sp floor.
+ * Returns the problems and the smallest text seen, so the run can record real numbers per screen.
  */
-export function tvSmallText(): string[] {
+export const MIN_LINE_PX = 92;
+export function tvTextSizes(): { small: string[]; min?: { px: number; text: string } } {
   adb("shell", "uiautomator", "dump", "/sdcard/ui.xml");
   const xml = adb("exec-out", "cat", "/sdcard/ui.xml");
   const small: string[] = [];
+  let min: { px: number; text: string } | undefined;
   for (const m of xml.matchAll(/<node [^>]*?text="([^"]+)"[^>]*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g)) {
     const h = +m[5] - +m[3];
-    if (m[1].trim() && h < 90) small.push(`"${m[1]}" is ${h} px tall`);
+    if (!m[1].trim()) continue;
+    if (!min || h < min.px) min = { px: h, text: m[1] };
+    if (h < MIN_LINE_PX) small.push(`"${m[1]}" is ${h} px tall`);
   }
-  return small;
+  return { small, min };
+}
+/** Real measurements per screen, written by the e2e run: docs/text-sizes.json (screen -> smallest text line, in px). */
+function recordTextSize(screen: string, min?: { px: number; text: string }) {
+  if (!min) return;
+  const f = "docs/text-sizes.json";
+  const all = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : {};
+  const key = screen.replace(/:\d+$/, ""); // intro:3 and intro:0 are the same screen
+  if (!all[key] || min.px < all[key].smallestLinePx) all[key] = { smallestLinePx: min.px, text: min.text, fontSpAtLeast: +(min.px / 1.167 / 2).toFixed(1) };
+  fs.writeFileSync(f, JSON.stringify(Object.fromEntries(Object.entries(all).sort()), null, 2) + "\n");
 }
 // Screens with something to press: a focus ring must be on one of them, or the remote's OK press does nothing visible.
 const NEEDS_FOCUS = /^(safety|home|week|together|calibrate|chair-ask|chair-no|chair-about|chair-how|chair-result|paused|finish|intro:\d+|rest:\d+)$/;
@@ -73,7 +87,8 @@ export async function waitScreen(name: string, timeoutMs = 60_000, shot?: string
     if (logcat("SteadyUpFlow").includes(`shown=${name}`)) {
       await sleep(shot ? 400 : 700); // let the frame draw
       if (shot) tvScreenshot(shot); // photograph first: the focus and text-size checks below take a couple of seconds
-      const small = tvSmallText();
+      const { small, min } = tvTextSizes();
+      recordTextSize(name, min);
       if (small.length) throw new Error(`text under the 40 sp floor on screen "${name}": ${small.join('; ')}`);
       if (NEEDS_FOCUS.test(name)) {
         let ok = false;

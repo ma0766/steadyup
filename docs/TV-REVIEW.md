@@ -1,57 +1,59 @@
 # TV screenshot accessibility review
 
-> Final state: reviewed by a fresh reviewer after the last UI fixes (29 PASS, 3 BORDERLINE, 0 FAIL). Two things were changed after it: the rest and finish screenshots now photograph the right screen, and the three borderline secondary lines on the pairing and week screens went from 40 sp to 44 sp. Text size is also MEASURED on the running app: the e2e tests fail if any text node on any screen is under 90 px tall (a 40 sp line is about 93 px). Everything in `docs/screens/` came from the last green `npm run verify` on `main`.
+Reviewer pass over 32 TV screenshots (1920x1080, density 2.0). Skipped: names with phone, family, ana; the .txt file.
 
-Method: each PNG (1920x1080, 320 dpi, so 40 sp = 80 px) was viewed. Sizes are estimates from glyph heights read off the image (capital height is about 0.71 of font size, so 80 px = about 57 px cap height), error about +/- 4 px. Contrast was judged from the visible colours: white, light blue, yellow and green text on near-black navy; dark navy text on blue or light-blue buttons. All pairs I saw are well above 4.5:1 (roughly 6.5:1 for dark text on the unfocused blue button, 12:1 or more elsewhere). The grey progress track is about 3.5:1 against the background, which is fine for a non-text shape. No text was clipped or overlapping in any screenshot.
+Method: I judged by eye. Font size is estimated from capital height (Roboto cap height is about 0.71 of the font size, so 80 px font is about 57 px cap). Each estimate is good to about plus or minus 4 px. Pass needs an estimate of 86 px or more. BORDERLINE means the smallest line is within about 4 px of the 80 px floor (40 sp). I could not prove any line is under 80 px, so there are no FAIL rows. Several secondary lines may be exactly 40 sp, which is the limit.
 
-Verdict rule: PASS = smallest text estimated at 86 px or more. BORDERLINE = smallest text within about 4 px of 80. FAIL = clearly under 80. Nothing is FAIL.
+Contrast: every text color I saw is light on a near-black navy, or dark text on light-blue or mid-blue buttons. Estimated ratios are 7:1 or better everywhere. Nothing is near 4.5:1. The grey unfilled part of the progress bar is a graphic, not text.
 
 | File | Screen | Text size | Contrast | Clipping | Focus ring | Note |
 | --- | --- | --- | --- | --- | --- | --- |
-| s0-tv | Splash | PASS (smallest "Your balance coach", about 84-86 px) | OK | none | no buttons | Clean. |
-| s1-tv-code | Pairing QR + number | BORDERLINE (smallest "Or type this number:", about 80 px; address about 95 px) | OK | none, but the address wraps as "...cloudfront." / "net" | no buttons | Address is hard to read and type, and shows a tech word ("cloudfront"). Code digits are large. |
-| s1-tv-connected | Connected | PASS (smallest "Your phone is ready.", about 95 px) | OK | none | no buttons | Clean. |
-| s2-tv-figure | Live set, 1 of 8 | PASS (smallest "Move 1 of 10", about 87 px) | OK | none | no buttons | Figure is small and low on the left; text is fine. |
-| s4-1-safety | First-run safety | PASS (smallest button label "I understand", about 100 px) | OK | none | visible | Good. |
-| s4-2-home | Home, 4 tiles | PASS (smallest "Good to see you.", about 87 px) | OK | none; "Start today's 10 minutes" wraps to 2 lines, fits | visible (Start) | One focused tile, clear. |
-| s4-3-intro | Move intro, Sit to stand | PASS (smallest "Stand up slowly. Then sit back down.", about 85-87 px) | OK | none | visible (I'm ready) | "Hold the back of the chair." wraps with a one-word second line ("chair."). |
-| s4-4-live | Live set, 0 of 3 | PASS (smallest "of 3" and "Step back..." line, about 90 px) | OK | none | no buttons | Shows "Step back so I can see your whole body." and the cue "Keep knees over toes" at the same time with count 0: two contradictory messages. |
-| s4-5-rest | Shows the Heel raises intro, not Rest | PASS (smallest "Rise up on your toes...", about 87 px) | OK | none | visible (I'm ready) | Wrong screen for its name; identical to s4-6. No Rest screen is proven. |
-| s4-6-intro-heel | Move intro, Heel raises | PASS (about 87 px) | OK | none | visible (I'm ready) | Fine. |
-| s4-7-live-heel | Live set, Heel raises, 2 of 3 | PASS (smallest "Move 2 of 3", about 87 px) | OK | none | no buttons | Clean. |
-| s4-8-finish | Shows Home, not Finish | PASS (smallest "Good to see you.", about 87 px) | OK | none | visible (Start) | Wrong screen for its name; duplicate of s4-2. Finish proof is s5-finish / s9-finish. |
-| s4-9-paused | Paused | PASS (smallest "OK", about 95 px bold; message about 115 px) | OK | none | visible (OK) | Message wraps with a one-word line ("ready."). |
-| s5-finish | Finish totals, 5 moves | PASS (smallest "See you tomorrow.", about 90 px) | OK | none | visible (Back to start) | Dense: right column wraps to 5 lines ("Foot in front (seconds): 40"), only about 30 px above "See you tomorrow." Label "(seconds)" and "Foot in front" are awkward. |
-| s5-intro-2 | Move intro, Leg out, left | PASS (smallest "Lift one leg out to the side.", about 87 px) | OK | none | visible (I'm ready) | Title wraps to 2 lines, fits. |
-| s5-intro-4 | Move intro, March in place | PASS (about 87 px) | OK | none | visible (I'm ready) | Fine. |
-| s5-intro-5 | Move intro, Foot in front | PASS (about 87 px) | OK | none | visible (I'm ready) | Fine. |
-| s5-live-hold | Live hold timer, 8 of 20 seconds | PASS (smallest "Move 6 of 10", about 87 px) | OK | none | no buttons | Clean. |
-| s6-tv-week | This week + family QR | BORDERLINE (smallest "Family can scan this." about 77-80 px, "Last time:" about 80 px) | OK | none; but only about 30 px between "Heel raises: 3" and the button | visible (Back to start) | "You exercised once this week." wraps with a one-word second line. Left column is crowded. |
-| s8-tv-room | Move together room code + QR | PASS (smallest "Family can join with this.", about 85 px) | OK | none | visible (Start together) | Clear. |
-| s8-tv-two-cameras | Together live, Together: 0 | PASS (smallest "You"/"Ana" labels and "Move 1 of 1", about 85-88 px) | OK | none. "Together: 0" sits in the header row and is whole, with about 100 px right margin. "You"/"Ana" labels end about 20 px above the cue box (tight, not touching). | no buttons | Total is readable. |
-| s8-tv-two-figures | Together live, Together: 2 | PASS (same as above) | OK | none. "Together: 2" whole. Labels about 20 px above the cue box. | no buttons | Cue "Keep knees over toes" is bold yellow, clear. |
-| s9-calibrate | "Let's try once more" | PASS (smallest "Stand up slowly, then sit down.", about 87 px; Skip about 92 px) | OK | none | visible (Skip) | Skip is a small button but the label is whole. |
-| s9-chair-1-question | Chair check question | PASS (smallest "Chair stand check", about 90 px) | OK | none | visible (Yes focused, No not) | Good. |
-| s9-chair-2-about | Optional age / sex | PASS (smallest "Press OK to change a choice.", about 84-86 px; buttons about 88 px) | OK | none | visible (Sex: Woman) | No title, so it is unclear what the screen belongs to. "score." sits alone on line 2. |
-| s9-chair-3-how | Chair check how-to, 6 lines | BORDERLINE (smallest lines about 82 px) | OK | none | visible (I'm ready) | Six sentences, each under 12 words, but a wall of text for this audience. |
-| s9-chair-4-go | Chair check timer | PASS (smallest "stands", about 90 px) | OK | none | no buttons | Clean. Timer "18 seconds" is in the header. |
-| s9-chair-5-result | Chair check score | PASS (smallest "CDC lists..." lines, about 88 px) | OK | none. The "Back to start" button has a full label and sits about 40 px below the last text line, about 70 px above the screen bottom. | visible (Back to start) | "CDC" is a jargon word; the sentence wraps with the one word "age." on line 2. |
-| s9-chair-no | Skipped the check | PASS (smallest "Back to start", about 95 px; message about 100 px) | OK | none | visible (Back to start) | Friendly and short. |
-| s9-finish | Finish, sit to stand | PASS (smallest "See you tomorrow.", about 90 px) | OK | none | visible (Back to start) | Clean. |
-| s9-home-grid | Home, 4 tiles | PASS (smallest "Good to see you.", about 87 px) | OK | none | visible (Start) | Tiles stay the same size when focused. |
-| s9-live-midset | Live set, 7 of 8 | PASS (smallest "Move 1 of 1", about 87 px) | OK | none | no buttons | Cue is bold and readable. "Move 1 of 1" is an odd label. |
+| s0-tv.png | Splash | BORDERLINE: tagline "Your balance coach" about 80 px | OK | none | no buttons | Title is large. Tagline is at the floor. |
+| s1-tv-code.png | Pairing code | PASS: "Or type this number:" about 87 px, address about 90 px, code about 150 px | OK | none, but the address wraps and leaves ".net" alone on a line | no buttons | The address is a long machine string with no label saying where to type it. See problems. |
+| s1-tv-connected.png | Connected | PASS: smallest "Your phone is ready." about 98 px | OK | none | no buttons | Clear. |
+| s2-tv-figure.png | Live set | BORDERLINE: cue "Stand up slowly. Then sit back down." about 84 px | OK | none | no buttons | Header "Move 1 of 10" about 87 px. Count is huge. Left margin is 96 px, right at the overscan edge. |
+| s4-1-safety.png | First-run safety | PASS: smallest text about 115 px, button about 98 px | OK | none | visible (white ring about 16 px, light fill) | Best screen in the set. |
+| s4-2-home.png | Home | BORDERLINE: "Good to see you." about 84 px; buttons about 82 px bold | OK (dark on mid-blue) | none; "Start today's 10 minutes" wraps to 2 lines but fits | visible on Start; other 3 are mid-blue, clearly different | Focused vs unfocused is easy to tell. Four buttons is more than one main action. |
+| s4-3-intro.png | Move intro | BORDERLINE: description about 84 px | OK | none | visible (I'm ready) | "Hold the back of the chair." wraps with "chair." alone on line 2. |
+| s4-4-live.png | Live set | PASS: smallest "Move 1 of 3" about 87 px | OK | none | no buttons | Yellow cue is about 105 px bold. Good. |
+| s4-5-rest.png | Rest | PASS: smallest "Next: Heel raises" about 98 px | OK | none | visible (Skip rest) | Clear. |
+| s4-6-intro-heel.png | Move intro | BORDERLINE: description about 84 px | OK | none | visible | Same layout as s4-3. |
+| s4-7-live-heel.png | Live set | BORDERLINE: cue "Rise up on your toes. Then lower slowly." about 84 px | OK | none | no buttons | Header about 87 px. |
+| s4-8-finish.png | Finish | PASS: smallest "Sit to stand: 3" about 87 px | OK | none | visible (Back to start) | Totals flow in two columns, so "March in place" shows before "Heel raises". Reading order is odd. |
+| s4-9-paused.png | Paused | PASS: smallest text about 94 px (OK button) | OK | none; "ready." sits alone on line 2 | visible (OK) | Clear. |
+| s5-finish.png | Finish, full plan | BORDERLINE: totals lines about 84 px | OK | none, but dense: 5 wrapped lines, button 82 px from the bottom edge | visible | Two uneven columns. "Foot in front (seconds): 40" and "Leg out to the side, right: 8" wrap. Hard to scan. |
+| s5-intro-2.png | Move intro | BORDERLINE: "Lift one leg out to the side." about 80 px | OK | none | visible | Title wraps and leaves "left" alone. |
+| s5-intro-4.png | Move intro | BORDERLINE: "Lift one knee, then the other." about 80 px | OK | none | visible | Fine otherwise. |
+| s5-intro-5.png | Move intro | BORDERLINE: "Put one foot right in front of the other." about 84 px | OK | none | visible | Fine otherwise. |
+| s5-live-hold.png | Live hold | BORDERLINE: cue about 84 px | OK | none | no buttons | "of 20 seconds" is large. Figure is clear. |
+| s6-tv-week.png | This week | BORDERLINE: "Heel raises: 3" about 80 px, "1 day in a row." about 84 px | OK | none, but the left column is packed: button bottom is 72 px from the screen edge | visible (Back to start) | Many size and color steps in one column. QR caption about 91 px. |
+| s8-tv-room.png | Move together lobby | BORDERLINE: "Family can join with this." about 84 px | OK | none | visible (Start together) | Room number about 150 px. Fine. |
+| s8-tv-two-cameras.png | Together live | BORDERLINE: cue about 84 px | OK | none; "You" and "Ana" labels sit 17 px above the cue panel | no buttons | "1 of 3" and "Together: 3" side by side can confuse. |
+| s8-tv-two-figures.png | Together live | PASS: smallest "Move 1 of 1" about 87 px | OK | none; labels tight above the cue panel | no buttons | Yellow cue is about 105 px. Good. |
+| s9-calibrate.png | Chair check retry | PASS: description about 88 px | OK | none | visible (Skip) | Five text blocks, but they fit. |
+| s9-chair-1-question.png | Chair check question | PASS: smallest "Chair stand check" about 87 px | OK | none | visible on Yes; No clearly different | Clear. Question is big and bold. |
+| s9-chair-2-about.png | Age and sex | BORDERLINE: "Press OK to change a choice." about 84 px | OK | none | visible on Sex; Age and Next are mid-blue | Buttons about 88 px. |
+| s9-chair-3-how.png | Chair check steps | PASS: step lines about 88 px | OK | none, but title and first line nearly touch and the button is 88 px from the bottom | visible | Six centered lines. Packed, but all text fits. |
+| s9-chair-4-go.png | Chair check live | BORDERLINE: cue about 84 px | OK | none | no buttons | Title about 91 px, timer about 105 px. |
+| s9-chair-5-result.png | Chair check result | BORDERLINE: "CDC lists under 11..." about 84 px | OK | none, but dense: button 72 px from the bottom edge | visible | "age." sits alone on a line. "CDC" is an acronym. |
+| s9-chair-no.png | Skip check | PASS: text about 120 px | OK | none | visible | Clear. |
+| s9-finish.png | Finish | PASS: smallest "Sit to stand: 8" about 88 px | OK | none | visible | Clear. |
+| s9-home-grid.png | Home | BORDERLINE: same as s4-2 (about 82 to 84 px) | OK | none | visible on Start | Same screen as s4-2. |
+| s9-live-midset.png | Live set | PASS: smallest "Move 1 of 1" about 87 px | OK | none | no buttons | Cue is about 105 px bold. |
 
-Counts: 32 screenshots. PASS 29, BORDERLINE 3, FAIL 0.
+## Counts
 
-## Real problems, most serious first
+PASS 14, BORDERLINE 18, FAIL 0 (32 rows).
 
-1. Two screenshots show the wrong screen. `s4-5-rest.png` is a Heel raises intro and `s4-8-finish.png` is Home. No Rest screen is shown in any reviewed file, so Rest has no visual proof. The Finish screen is covered only by s5-finish and s9-finish.
-2. `s4-4-live` shows two conflicting messages at once: "Step back so I can see your whole body." and "Keep knees over toes", with the count at 0. Show one message only (the step-back one should win).
-3. `s1-tv-code`: the typed-fallback address breaks across two lines ("cloudfront." / "net") and shows a tech word. The "Or type this number:" line is about 80 px, right at the limit. A short address on one line would help.
-4. Text margin is thin on the secondary lines. Many light-blue lines measure about 84-87 px, and three screens measured at or just under the limit (s1-tv-code, s6-tv-week "Family can scan this." about 77-80 px, s9-chair-3-how about 82 px). These probably render at exactly 40 sp, which meets the rule only if the estimate error is in our favour. Raising secondary lines to 44 sp would remove the doubt.
-5. Crowded layouts: s5-finish (5-line right column, "Foot in front (seconds)" is an odd label) and s6-tv-week (lines about 30 px above the button). Fits today, but breaks if a plan adds one more move or a longer sentence.
-6. One-word orphan lines: "chair." (intro screens), "ready." (s4-9), "week." (s6), "age." (s9-chair-5), "score." (s9-chair-2). Cosmetic, but harder to read for older eyes.
-7. s9-chair-2-about has no screen title; "CDC" on s9-chair-5-result is a jargon word (the plain-words rule says no tech words; this is an organisation name, so judgment call).
-8. s9-chair-3-how is six lines of text on one screen. All sentences are short, but one idea per screen would suit this audience better.
+## Problems, most serious first
 
-Not found: low contrast, clipped or empty buttons, overlapping text, a missing focus ring, or any cut-off "Together: N" total on s8-tv-*. Focus on every screen with buttons is a thick white border (about 16 px, 8 dp) with a lighter fill, on exactly one button.
+1. The pairing address on s1-tv-code is a raw machine string (`dh3aa2spgh07i.cloudfront.net`). It has no label saying what to do with it, it breaks to ".net" alone on a second line, and "cloudfront" is a tech word on screen. A person who cannot scan the QR cannot use it. Size is fine (about 90 px). Suggest a label such as "Or go to this page on your phone", or no address at all.
+2. The most common secondary line (cues, move descriptions, home buttons, week list, lobby) is about 80 to 84 px. Meets the 40 sp rule on paper with no margin. A 4 px error flips it. Raise these lines to 44 sp (88 px), as was done for the pairing and week screens.
+3. Dense screens: s5-finish (5 wrapped lines, two uneven columns, button 82 px from the bottom), s9-chair-5 (4 text blocks, button 72 px from the bottom) and s6-tv-week (left column packed, button 72 px from the bottom). Real TVs may crop about 5 percent at the edges (about 54 px). Nothing is clipped here, but there is little slack. Suggest fewer lines or a single column.
+4. Finish totals read in an odd order on s4-8 and s5-finish. The two-column flow shows "March in place" before "Heel raises" and splits the list. Use one column in plan order.
+5. Orphan words from wrapping: "chair." (intros), "left" (s5-intro-2 title), "ready." (s4-9), "age." (s9-chair-5), ".net" (s1). Small, but harder for slow readers.
+6. On s8-tv-two-cameras and s8-tv-two-figures, the "You" and "Ana" labels sit 17 px above the cue panel, and "1 of 3" next to "Together: 3" mixes two counts. Add spacing and label the shared number.
+7. s9-chair-5 uses "CDC lists under 11 as below average for your age." CDC is an acronym. Also check this line against the rule "no claims beyond quoting cited studies". It is a quote, but it is a health judgement on screen.
+8. s4-2 and s9-home-grid show four equal buttons. The spec says one main action per screen. The focus ring is clear, so this is a design note, not a failure.
+
+No contrast failures, no cut-off or overlapping text, no empty or clipped buttons. Every screen with buttons shows one clearly focused button (thick white ring, lighter fill).

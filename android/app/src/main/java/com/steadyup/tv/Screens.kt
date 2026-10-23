@@ -375,12 +375,17 @@ fun ChairGoScreen(count: Int, left: Int, cue: String?, pose: PoseFrame?, voice: 
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun ChairResultScreen(score: Int, age: Int, sex: Int, onOk: () -> Unit) = Page {
-    Text(Sentences.CHAIR_SCORE, fontSize = 44.sp, color = Ink.soft)
-    Text("$score", fontSize = 110.sp, fontWeight = FontWeight.Bold, color = Ink.good)
-    Text(Sentences.CHAIR_STANDS, fontSize = 44.sp, color = Ink.text)
-    Spacer(Modifier.height(8.dp))
-    for (line in Cdc.lines(age, sex)) Text(line, fontSize = 40.sp, color = Ink.warn, textAlign = TextAlign.Center)
-    Spacer(Modifier.height(14.dp))
-    BigButton(Sentences.FINISH_OK, onOk, fontSp = 44)
+fun ChairResultScreen(score: Int, age: Int, sex: Int, onOk: () -> Unit) {
+    // compact margins like the instructions screen, so the score, CDC's two lines and the button all fit without squeezing the button
+    Column(
+        Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 48.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(Sentences.CHAIR_SCORE, fontSize = 44.sp, color = Ink.soft)
+        Text("$score", fontSize = 96.sp, fontWeight = FontWeight.Bold, color = Ink.good, lineHeight = 100.sp)
+        Text(Sentences.CHAIR_STANDS, fontSize = 44.sp, color = Ink.text)
+        for (line in Cdc.lines(age, sex)) Text(line, fontSize = 40.sp, color = Ink.warn, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
+        BigButton(Sentences.FINISH_OK, onOk, fontSp = 44)
+    }
 }
