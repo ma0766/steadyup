@@ -1,0 +1,87 @@
+{
+  "calibrate": {
+    "smallestLinePx": 96,
+    "text": "Skip",
+    "fontSpAtLeast": 41.1
+  },
+  "chair-about": {
+    "smallestLinePx": 94,
+    "text": "Press OK to change a choice.",
+    "fontSpAtLeast": 40.3
+  },
+  "chair-ask": {
+    "smallestLinePx": 103,
+    "text": "Chair stand check",
+    "fontSpAtLeast": 44.1
+  },
+  "chair-go": {
+    "smallestLinePx": 103,
+    "text": "Chair stand check",
+    "fontSpAtLeast": 44.1
+  },
+  "chair-how": {
+    "smallestLinePx": 103,
+    "text": "Sit in the middle of a chair without arms.",
+    "fontSpAtLeast": 44.1
+  },
+  "chair-no": {
+    "smallestLinePx": 112,
+    "text": "Back to start",
+    "fontSpAtLeast": 48
+  },
+  "chair-ready": {
+    "smallestLinePx": 103,
+    "text": "Cross your arms on your chest.",
+    "fontSpAtLeast": 44.1
+  },
+  "chair-result": {
+    "smallestLinePx": 94,
+    "text": "Share this number with your doctor.",
+    "fontSpAtLeast": 40.3
+  },
+  "finish": {
+    "smallestLinePx": 94,
+    "text": "Sit to stand: 3",
+    "fontSpAtLeast": 40.3
+  },
+  "home": {
+    "smallestLinePx": 94,
+    "text": "Good to see you.",
+    "fontSpAtLeast": 40.3
+  },
+  "intro": {
+    "smallestLinePx": 94,
+    "text": "Lift one knee, then the other.",
+    "fontSpAtLeast": 40.3
+  },
+  "live": {
+    "smallestLinePx": 94,
+    "text": "Stand up slowly. Then sit back down.",
+    "fontSpAtLeast": 40.3
+  },
+  "paused": {
+    "smallestLinePx": 112,
+    "text": "OK",
+    "fontSpAtLeast": 48
+  },
+  "rest": {
+    "smallestLinePx": 112,
+    "text": "Next: Heel raises",
+    "fontSpAtLeast": 48
+  },
+  "safety": {
+    "smallestLinePx": 112,
+    "text": "I understand",
+    "fontSpAtLeast": 48
+  },
+  "together": {
+    "smallestLinePx": 94,
+    "text": "Family can join with this.",
+    "fontSpAtLeast": 40.3
+  },
+  "week": {
+    "smallestLinePx": 94,
+    "text": "1 day in a row.",
+    "fontSpAtLeast": 40.3
+  }
+}

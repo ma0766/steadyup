@@ -1,4 +1,33 @@
-# TV screenshot accessibility review
+# TV text size: measured, and what the eye-judging reviews said
+
+**Ground truth (measured on the running app, final green verify on `main`).** The e2e tests dump the TV's UI tree on every screen they visit and fail if any text line is under 92 px tall (at 320 dpi a 40 sp line is 93 px; a 48 sp line measures 112 px). Smallest text line seen per screen, from `docs/text-sizes.json`:
+
+| Screen | Smallest line | At least | Text |
+| --- | --- | --- | --- |
+| calibrate | 96 px | 41.1 sp | Skip |
+| chair-about | 94 px | 40.3 sp | Press OK to change a choice. |
+| chair-ask | 103 px | 44.1 sp | Chair stand check |
+| chair-go | 103 px | 44.1 sp | Chair stand check |
+| chair-how | 103 px | 44.1 sp | Sit in the middle of a chair without arm |
+| chair-no | 112 px | 48 sp | Back to start |
+| chair-ready | 103 px | 44.1 sp | Cross your arms on your chest. |
+| chair-result | 94 px | 40.3 sp | Share this number with your doctor. |
+| finish | 94 px | 40.3 sp | Sit to stand: 3 |
+| home | 94 px | 40.3 sp | Good to see you. |
+| intro | 94 px | 40.3 sp | Lift one knee, then the other. |
+| live | 94 px | 40.3 sp | Stand up slowly. Then sit back down. |
+| paused | 112 px | 48 sp | OK |
+| rest | 112 px | 48 sp | Next: Heel raises |
+| safety | 112 px | 48 sp | I understand |
+| together | 94 px | 40.3 sp | Family can join with this. |
+| week | 94 px | 40.3 sp | 1 day in a row. |
+
+Smallest anywhere: **94 px, which is 40.3 sp or more**, so every screen the tests visit meets the 40 sp rule. The pairing screen (s1-tv-code) is not stepped through by `waitScreen`; its text sizes are 44 to 80 sp in the code (checked by `tests/unit/s9-words.test.ts`).
+
+**The reviewers who judged by eye** (three fresh reviewers over the screenshots, each told its sizes were estimates good to about 4 px) disagreed with each other: 29 PASS / 3 BORDERLINE, then 14 PASS / 18 BORDERLINE, never a FAIL, and none could prove any line under 80 px. Contrast was 6.5:1 or better everywhere, no clipped or overlapping text, a visible focus ring on every screen with buttons. The measurement above settles the size question. Real problems they found were fixed (clipped Together total, squashed chair result button, wrong rest and finish screenshots, focus ring, grid widths, chair instructions at 44 sp, and a button label that the stricter 92 px measurement showed clipped). Design notes still open: the long pairing address is the typed fallback; the Home screen shows four equal choices; totals on the finish screen flow into two columns.
+
+The table below is the last eye-review (an estimate, kept for the record).
+
 
 Reviewer pass over 32 TV screenshots (1920x1080, density 2.0). Skipped: names with phone, family, ana; the .txt file.
 

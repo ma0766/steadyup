@@ -30,6 +30,8 @@
 
 **Final chair stand screenshots, checked by eye after the last green verify on main (files timestamped 07:20-07:21):** s9-chair-1 question with a focus ring on Yes; s9-chair-2 age 65 to 69 and sex Woman with the "Press OK to change a choice." hint and a ring on the focused row; s9-chair-3 the six CDC instruction lines with "I'm ready" focused; s9-chair-4 timer in seconds, live count 8, banner; s9-chair-5 score 12, "CDC lists under 11 as below average for your age." (the CDC number for a woman aged 65 to 69), "Share this number with your doctor.", and a labelled focused "Back to start" button; s9-chair-no the skip sentence with a focused button. Nothing clipped or overlapping. The text-size floor is also measured by the e2e run on each of these screens (no text node under 90 px tall). The chair screens did not change after the last fresh-reviewer pass (only the pairing and week screens went from 40 sp to 44 sp).
 
+**Last round (08:00-08:35):** a stricter measurement (92 px) found the chair result button label clipped; fixed by a compact layout. Final `npm run verify` on main: exit 0, all slices PASS, S9 53, Lighthouse 100, 133 unit tests. Measured smallest TV text per screen: docs/text-sizes.json (min 94 px, 40 sp = 93 px). `submission-v1` tag is on the remote (a725207). `submission-v2` moved to the final commit.
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
