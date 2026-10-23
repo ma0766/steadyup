@@ -20,7 +20,8 @@ export async function tvCode(extras: string[] = []): Promise<string> {
   adb("logcat", "-c");
   adb("shell", "pm", "clear", "com.steadyup.tv");
   adb("shell", "am", "start", "-n", "com.steadyup.tv/.MainActivity", ...extras);
-  for (let i = 0; i < 40; i++) {
+  // the first launch after a fresh install is slow (the system optimises the app), so allow up to 2 minutes
+  for (let i = 0; i < 120; i++) {
     if (/code=\d{6}/.test(logcat("SteadyUpPair"))) {
       await sleep(3000);
       return [...logcat("SteadyUpPair").matchAll(/code=(\d{6})/g)].pop()![1];

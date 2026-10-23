@@ -34,6 +34,8 @@
 
 **Last subagent screenshot review (after the final layout fixes, using the measured text sizes as ground truth):** 29 rows fully PASS, 2 pass every visual check but are not in the measured file (splash and Connected screens), 1 FAIL: s1-tv-code shows the long CloudFront address as the typed fallback (a tech string that wraps ".net" onto a second line). Left as is on purpose: without it a person who cannot scan the QR has no way in, and a friendlier address needs a real domain (first item in docs/WAKE-UP.md's open list). Other notes (CDC wording is the CDC's own and the user's required text; crowded finish screen; 97-103 px side margins) are logged in docs/TV-REVIEW.md. No code changed after the last green verify.
 
+**Pairing address removed (decision, 08:40):** the last subagent screenshot review marked s1-tv-code FAIL because the TV showed the long CloudFront address (a tech string). Decision: the hard rule 'no tech words a user can see' wins over the typed fallback, so the TV shows only the QR and the number; README and docs/DEMO.md give the address for judges and manual typing. Done on branch `pairing-address`, merged to main only after a full green verify (see the entry below once merged).
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.

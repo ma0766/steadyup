@@ -75,5 +75,5 @@
 | 6 | Demo script and app disagree | **Fixed.** DEMO.md matches the 2 x 2 grid and says the family history is seeded for the demo; the README says so too. |
 | 7 | Spoken coaching never demonstrated | **Partly fixed.** The emulator has no speech engine, so the audio still cannot be shown. With no voice the cue banner is bigger. Record on a real Fire TV to show the voice. |
 | 8 | Thin Fire TV angle, no hardware test | **Partly fixed.** README "Why Fire TV" section, 320x180 launcher banner, remote-only focus on every screen (checked by the e2e tests), no Google Play services anywhere (scanned by `npm run verify`). Still no physical Fire TV. |
-| 9 | Pairing screen shows a raw address | **Not fixed.** The QR is the main path; the address and number are the typed fallback and need a real domain to look friendlier. |
+| 9 | Pairing screen shows a raw address | **Fixed.** The TV now shows only the QR and the 6-number code. The page address is given in the README and the demo script (judges and anyone typing by hand), not on the TV. |
 | 10 | Impact claims lean on stats | **Partly fixed.** README opens with a three-line hook, adds the CDC chair stand check (a real-world number the person can take to a doctor), a "Next" section and an honest limits list. No user quotes yet: that needs real people. |

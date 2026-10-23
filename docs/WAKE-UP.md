@@ -31,7 +31,7 @@ Also: the Home screen is now a 2x2 grid (all four buttons fit), the live screen 
 
 - No older adult has tried it, and no real Fire TV was used (emulator only). The emulator has no voice, so spoken cues were never heard.
 - One guest per "move together" room.
-- The pairing screen still shows the long CloudFront address as the typed fallback (the QR is the real path). A short domain would fix it.
+- The pairing screen shows only the QR and the number (no web address, to keep to the no-tech-words rule). Typing by hand needs the address from the README; a short domain would make that friendlier.
 - The demo history on the family page is seeded by `node scripts/seed-demo-history.mjs` (say so in the video description).
 
 ## Deadline reminders
