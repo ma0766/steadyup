@@ -12,7 +12,7 @@ const tryJoin = (code: string): Promise<string> => new Promise((resolve, reject)
 });
 
 test("S9 five wrong numbers in a minute, then a one-minute wait with a kind sentence", async () => {
-  test.setTimeout(3 * 60_000);
+  test.setTimeout(6 * 60_000); // three one-minute waits
   await new Promise((r) => setTimeout(r, 62_000)); // start from a clean minute (earlier tests made a few wrong tries)
   const seen: string[] = [];
   for (let i = 0; i < 5; i++) seen.push(await tryJoin("000000"));

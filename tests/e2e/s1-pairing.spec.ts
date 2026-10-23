@@ -21,8 +21,8 @@ test("S1 phone joins with the TV number, both show Connected; reuse is refused",
   await phone.screenshot({ path: "docs/screens/s1-phone-connected.png" });
 
   await expect.poll(() => adb("logcat", "-d", "-s", "SteadyUpPair"), { timeout: 15_000 }).toContain("state=connected");
-  await sleep(1500);
-  tvScreenshot("s1-tv-connected");
+  await sleep(300);
+  tvScreenshot("s1-tv-connected"); // inside the 1.8 s "Connected" moment
 
   const second = await newPhone(browser);
   await typeCode(second, code);

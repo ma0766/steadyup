@@ -85,6 +85,7 @@ object Sentences {
     const val CHAIR_SKIP_1 = "That's okay. We'll skip this check."
     const val CHAIR_ABOUT = "Optional. This helps compare your score."
     const val NEXT = "Next"
+    const val CHAIR_HINT = "Press OK to change a choice."
     const val CHAIR_HOW_1 = "Sit in the middle of a chair without arms."
     const val CHAIR_HOW_2 = "Put the chair against a wall."
     const val CHAIR_HOW_3 = "Feet flat on the floor."
@@ -114,7 +115,7 @@ object Sentences {
     const val WEEK_PROBLEM = "We can't reach your week right now."
     val ALL = listOf(TRY_AGAIN, CONNECTING, SCAN, OR_TYPE, CONNECTED, PHONE_READY, LOST, SAFETY_1, SAFETY_2, SAFETY_OK,
         HOME_HELLO, HOME_START, HOLD_CHAIR, INTRO_GO, STEP_BACK, PAUSED, REST, REST_SKIP, NEXT_UP, WELL_DONE, FINISH_TITLE, FINISH_OK, OF,
-        CAL_TITLE, CAL_STEP, CAL_TWICE, CAL_AGAIN, CAL_SKIP, CHAIR_BUTTON, CHAIR_ASK, YES, NO, CHAIR_SKIP_1, CHAIR_ABOUT, NEXT,
+        CAL_TITLE, CAL_STEP, CAL_TWICE, CAL_AGAIN, CAL_SKIP, CHAIR_BUTTON, CHAIR_ASK, YES, NO, CHAIR_SKIP_1, CHAIR_ABOUT, NEXT, CHAIR_HINT,
         CHAIR_HOW_1, CHAIR_HOW_2, CHAIR_HOW_3, CHAIR_HOW_4, CHAIR_HOW_5, CHAIR_HOW_6, CHAIR_GET_READY, CHAIR_SCORE, CHAIR_STANDS,
         CHAIR_SHARE, CHAIR_GENERIC, ARMS, HOME_TOGETHER, TOGETHER_TITLE, TOGETHER_SCAN, TOGETHER_WAIT, TOGETHER_START, YOU, TOGETHER_TOTAL,
         HOME_WEEK, WEEK_TITLE, WEEK_NONE, WEEK_AGAIN, WEEK_LAST, WEEK_FAMILY, WEEK_LOADING, WEEK_PROBLEM)

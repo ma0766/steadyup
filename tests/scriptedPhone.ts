@@ -25,7 +25,15 @@ export class ScriptedPhone {
   constructor(private wsUrl: string) {}
 
   /** Pair with the TV by number, or (with `hello`) join a Move together room as family. */
-  join(code: string, hello: object = { type: "join", code }): Promise<void> {
+  async join(code: string, hello: object = { type: "join", code }): Promise<void> {
+    // the test machine's DNS now and then fails a lookup (EAI_AGAIN): try the connection a few times before giving up
+    for (let attempt = 0; ; attempt++) {
+      try { return await this.joinOnce(code, hello); }
+      catch (e: any) { if (attempt >= 3 || !/EAI_AGAIN|ENOTFOUND|ECONNRESET|ETIMEDOUT|EBUSY/.test(String(e?.message ?? e))) throw e; await sleep(1500); }
+    }
+  }
+
+  private joinOnce(code: string, hello: object): Promise<void> {
     this.ws = new WebSocket(this.wsUrl);
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => reject(new Error("pairing timed out")), 20_000);

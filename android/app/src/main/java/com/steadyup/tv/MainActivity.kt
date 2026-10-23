@@ -256,7 +256,7 @@ fun PairScreen(state: PairingState, restart: () -> Unit) {
                     Text(PairingReducer.spaced(state.code), fontSize = 80.sp, fontWeight = FontWeight.Bold, softWrap = false,
                         fontFamily = FontFamily.Monospace, color = Color.White)
                     Spacer(Modifier.height(16.dp))
-                    Text(BuildConfig.WEB_URL.removePrefix("https://"), fontSize = 40.sp, color = Color(0xFFBFD7EA))
+                    Text(BuildConfig.WEB_URL.removePrefix("https://"), fontSize = 44.sp, color = Color(0xFFBFD7EA))
                 }
             }
             PairingState.Connected -> {

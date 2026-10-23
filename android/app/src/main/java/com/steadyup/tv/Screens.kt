@@ -2,6 +2,7 @@ package com.steadyup.tv
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +50,7 @@ object Ink {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun BigButton(label: String, onClick: () -> Unit, autoFocus: Boolean = true, fontSp: Int = 48) {
+fun BigButton(label: String, onClick: () -> Unit, autoFocus: Boolean = true, fontSp: Int = 48, modifier: Modifier = Modifier, fixedSize: Boolean = false) {
     val focus = remember { FocusRequester() }
     var focused by remember { mutableStateOf(false) }
     // The remote's OK press must land on this button with no arrow keys. Focus can fail while the screen is still
@@ -58,24 +59,33 @@ fun BigButton(label: String, onClick: () -> Unit, autoFocus: Boolean = true, fon
         if (!autoFocus) return@LaunchedEffect
         repeat(30) { if (!focused) { runCatching { focus.requestFocus() }; delay(100) } }
     }
+    val shape = RoundedCornerShape(20.dp)
     Surface(
         onClick = onClick,
-        modifier = Modifier.focusRequester(focus).onFocusChanged { focused = it.isFocused },
-        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(20.dp)),
+        // hasFocus (not isFocused): the real focusable lives inside Surface, below this modifier. Knowing it has focus
+        // stops the retry loop above; asking again every 100 ms kept resetting Surface's own focus ring.
+        // We draw the one focus ring and the lighter fill from that state, so focus is visible however it arrived.
+        modifier = modifier.focusRequester(focus).onFocusChanged { focused = it.hasFocus }
+            .then(if (focused) Modifier.border(BorderStroke(8.dp, Color.White), shape) else Modifier),
+        shape = ClickableSurfaceDefaults.shape(shape),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = Ink.button, contentColor = Ink.bg,
+            containerColor = if (focused) Color(0xFFBFE3F7) else Ink.button, contentColor = Ink.bg,
             focusedContainerColor = Color(0xFFBFE3F7), focusedContentColor = Ink.bg,
         ),
-        border = ClickableSurfaceDefaults.border(focusedBorder = Border(BorderStroke(8.dp, Color.White))),
+        border = ClickableSurfaceDefaults.border(focusedBorder = Border.None),
     ) {
-        Text(label, fontSize = fontSp.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = if (fontSp < 48) 32.dp else 56.dp, vertical = if (fontSp < 48) 14.dp else 24.dp))
+        // the Surface's content box passes its size down, so a fixed-size button centres its label
+        Box(if (fixedSize) Modifier.fillMaxSize() else Modifier, contentAlignment = Alignment.Center) {
+            Text(label, fontSize = fontSp.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = if (fontSp < 48) 24.dp else 48.dp, vertical = if (fontSp < 48) 14.dp else 24.dp))
+        }
     }
 }
 
 @Composable
 private fun Page(content: @Composable () -> Unit) {
     Column(
-        Modifier.fillMaxSize().background(Ink.bg).padding(32.dp),
+        Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 48.dp, vertical = 36.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) { content() }
@@ -99,13 +109,13 @@ fun HomeScreen(onStart: () -> Unit, onWeek: () -> Unit, onTogether: () -> Unit, 
     Spacer(Modifier.height(20.dp))
     // 2 x 2 grid so every choice fits on a 1080p TV. Arrow keys move between them; the first has focus.
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-        BigButton(Sentences.HOME_START, onStart, fontSp = 40)
-        BigButton(Sentences.HOME_TOGETHER, onTogether, autoFocus = false, fontSp = 40)
+        BigButton(Sentences.HOME_START, onStart, fontSp = 40, modifier = Modifier.width(410.dp).height(124.dp), fixedSize = true)
+        BigButton(Sentences.HOME_TOGETHER, onTogether, autoFocus = false, fontSp = 40, modifier = Modifier.width(410.dp).height(124.dp), fixedSize = true)
     }
     Spacer(Modifier.height(16.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-        BigButton(Sentences.HOME_WEEK, onWeek, autoFocus = false, fontSp = 40)
-        BigButton(Sentences.CHAIR_BUTTON, onChair, autoFocus = false, fontSp = 40)
+        BigButton(Sentences.HOME_WEEK, onWeek, autoFocus = false, fontSp = 40, modifier = Modifier.width(410.dp).height(124.dp), fixedSize = true)
+        BigButton(Sentences.CHAIR_BUTTON, onChair, autoFocus = false, fontSp = 40, modifier = Modifier.width(410.dp).height(124.dp), fixedSize = true)
     }
 }
 
@@ -183,10 +193,10 @@ fun IntroScreen(item: PlanItem, onReady: () -> Unit) = Page {
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, together: TogetherView? = null, setNo: Int = 1, setTotal: Int = 1, voice: Boolean = true) {
-    Column(Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 32.dp, vertical = 16.dp)) {
+    Column(Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 48.dp, vertical = 30.dp)) {
         // top: where we are in the session, and the move
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Move $setNo ${Sentences.OF} $setTotal", fontSize = 40.sp, color = Ink.soft)
+            Text("Move $setNo ${Sentences.OF} $setTotal", fontSize = 44.sp, color = Ink.soft)
             Spacer(Modifier.width(24.dp))
             Text(item.title, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Ink.text)
         }
@@ -198,7 +208,7 @@ fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, toget
                 // two people, side by side, each with a name under their figure
                 for ((label, p, tint) in listOf(Triple(Sentences.YOU, pose, Ink.good), Triple(together.name, together.pose, Ink.warn))) Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(Modifier.weight(1f).fillMaxWidth()) { if (p != null) StickFigure(p, Modifier.fillMaxSize(), color = tint) }
-                    Text(label, fontSize = 40.sp, fontWeight = FontWeight.Bold, color = tint)
+                    Text(label, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = tint)
                 }
             }
             Column(Modifier.width(440.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -206,7 +216,7 @@ fun LiveScreen(item: PlanItem, count: Int, cue: String?, pose: PoseFrame?, toget
                 Text("${Sentences.OF} ${item.target}" + if (item.isHold) " seconds" else "", fontSize = 48.sp, color = Ink.text)
                 Spacer(Modifier.height(12.dp))
                 // fill bar: how far through this set
-                Box(Modifier.fillMaxWidth().height(20.dp).background(Color(0xFF2A3B4D), RoundedCornerShape(10.dp))) {
+                Box(Modifier.fillMaxWidth().height(20.dp).background(Color(0xFF5B7388), RoundedCornerShape(10.dp))) {
                     Box(Modifier.fillMaxWidth((count.toFloat() / item.target).coerceIn(0f, 1f)).fillMaxHeight().background(Ink.good, RoundedCornerShape(10.dp)))
                 }
                 if (together != null) { Spacer(Modifier.height(8.dp)); Text("${Sentences.TOGETHER_TOTAL} ${together.total}", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Ink.text) }
@@ -244,13 +254,18 @@ fun RestScreen(next: PlanItem, secondsLeft: Int, onSkip: () -> Unit) = Page {
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun FinishScreen(totals: List<Pair<String, Int>>, onDone: () -> Unit) = Page {
-    Text(Sentences.FINISH_TITLE, fontSize = 64.sp, fontWeight = FontWeight.Bold, color = Ink.good)
-    Spacer(Modifier.height(8.dp))
-    for ((title, n) in totals) Text("$title: $n", fontSize = 40.sp, color = Ink.text)
-    Spacer(Modifier.height(8.dp))
-    Text(Sentences.WELL_DONE.substringAfter(". "), fontSize = 48.sp, color = Ink.soft)
-    Spacer(Modifier.height(16.dp))
-    BigButton(Sentences.FINISH_OK, onDone)
+    Text(Sentences.FINISH_TITLE, fontSize = 60.sp, fontWeight = FontWeight.Bold, color = Ink.good)
+    Spacer(Modifier.height(4.dp))
+    // two columns so six totals plus the button always fit on the screen
+    Row(horizontalArrangement = Arrangement.spacedBy(48.dp)) {
+        for (half in totals.chunked((totals.size + 1) / 2)) Column {
+            for ((title, n) in half) Text("$title: $n", fontSize = 40.sp, color = Ink.text)
+        }
+    }
+    Spacer(Modifier.height(6.dp))
+    Text(Sentences.WELL_DONE.substringAfter(". "), fontSize = 44.sp, color = Ink.soft)
+    Spacer(Modifier.height(12.dp))
+    BigButton(Sentences.FINISH_OK, onDone, fontSp = 44)
 }
 
 
@@ -298,7 +313,8 @@ fun ChairNoScreen(onOk: () -> Unit) = Page {
 @Composable
 fun ChairAboutScreen(age: Int, sex: Int, onAge: () -> Unit, onSex: () -> Unit, onNext: () -> Unit) = Page {
     Text(Sentences.CHAIR_ABOUT, fontSize = 48.sp, color = Ink.text, textAlign = TextAlign.Center)
-    Spacer(Modifier.height(20.dp))
+    Text(Sentences.CHAIR_HINT, fontSize = 40.sp, color = Ink.soft, textAlign = TextAlign.Center)
+    Spacer(Modifier.height(12.dp))
     BigButton("Age: ${Cdc.AGE_LABELS[age]}", onAge, fontSp = 44)          // OK changes the choice; arrow down moves on
     Spacer(Modifier.height(12.dp))
     BigButton("Sex: ${Cdc.SEX_LABELS[sex]}", onSex, autoFocus = false, fontSp = 44)
@@ -326,7 +342,7 @@ fun ChairReadyScreen(n: Int) = Page {
 
 @Composable
 fun ChairGoScreen(count: Int, left: Int, cue: String?, pose: PoseFrame?, voice: Boolean) {
-    Column(Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 32.dp, vertical = 16.dp)) {
+    Column(Modifier.fillMaxSize().background(Ink.bg).padding(horizontal = 48.dp, vertical = 30.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(Sentences.CHAIR_BUTTON, fontSize = 44.sp, fontWeight = FontWeight.Bold, color = Ink.text)
             Spacer(Modifier.width(24.dp))
