@@ -1,0 +1,16 @@
+node_modules
+cdk.out
+build/
+.gradle
+local.properties
+*.y4m
+*.mp4
+.env
+dist
+test-results
+playwright-report
+.claude/session.md
+.claude/log.md
+android/.kotlin
+*.iml
+cdk-outputs.json
