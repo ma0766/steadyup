@@ -62,3 +62,18 @@
 - **What a judge sees:** README opens with CDC and Cochrane numbers. There is no quote from an older adult, no test with anyone, no pricing or distribution plan, and no mention of what happens after the hackathon. The disclaimer repeats that it is not medical.
 - **Why it costs points:** Impact is scored equally. The stats show the problem is large, but not that SteadyUp solves it. The "Honest limits" section, while honest, lists what is not done and ends with "See MORNING-REPORT" as if unfinished.
 - **Fix:** Get 2 or 3 people (ideally 65+) to try it for 5 minutes and add one quote and a photo to the README. Add a 3-line "Next" section covering the Appstore listing and a free-for-family model. Replace the internal MORNING-REPORT pointer with a clear known-issues list.
+
+## Status after the world-class pass (what changed, honestly)
+
+| # | Weakness | Status |
+| --- | --- | --- |
+| 1 | No evidence of a real person on a chair | **Not fixed.** Needs a human with a front-facing phone. Do this first (see docs/WAKE-UP.md). Calibration (two slow stands, any height or distance) removes the biggest reason a real person could be miscounted, and the CDC chair stand check gives the demo a real-world number. |
+| 2 | Screenshots show 0 or scripted runs | **Partly fixed.** New `s9-live-midset.png`, `s9-finish.png`, `s9-chair-*.png` show non-zero counts. They are still driven by a scripted phone with synthetic body points; the README says so. |
+| 3 | Clipped third button on Home | **Fixed.** Home is a 2 x 2 grid of four buttons that all fit at 1080p (`s9-home-grid.png`). |
+| 4 | Phone pages look unfinished | **Fixed.** Centred layout, full-width camera preview with a body outline guide, one framing instruction, large buttons, visible focus. Lighthouse accessibility 100; axe finds nothing serious; no sideways scroll at 390 px. |
+| 5 | Live screen too sparse | **Fixed.** "Move N of M" header, the move name, a fill bar, a banner that shows the cue (or what to do), larger figure. Cues are larger when the TV has no voice. |
+| 6 | Demo script and app disagree | **Fixed.** DEMO.md matches the 2 x 2 grid and says the family history is seeded for the demo; the README says so too. |
+| 7 | Spoken coaching never demonstrated | **Partly fixed.** The emulator has no speech engine, so the audio still cannot be shown. With no voice the cue banner is bigger. Record on a real Fire TV to show the voice. |
+| 8 | Thin Fire TV angle, no hardware test | **Partly fixed.** README "Why Fire TV" section, 320x180 launcher banner, remote-only focus on every screen (checked by the e2e tests), no Google Play services anywhere (scanned by `npm run verify`). Still no physical Fire TV. |
+| 9 | Pairing screen shows a raw address | **Not fixed.** The QR is the main path; the address and number are the typed fallback and need a real domain to look friendlier. |
+| 10 | Impact claims lean on stats | **Partly fixed.** README opens with a three-line hook, adds the CDC chair stand check (a real-world number the person can take to a doctor), a "Next" section and an honest limits list. No user quotes yet: that needs real people. |

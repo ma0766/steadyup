@@ -38,7 +38,7 @@ export async function startLive(
   let bands: StandBands | undefined;                 // this person's own seated/standing levels, after calibration
   let calibrator: ReturnType<typeof createCalibrator> | null = null;
   let calStart = 0, calReported = -1;
-  const CAL_TIMEOUT_MS = 45_000;
+  const CAL_TIMEOUT_MS = Number(new URLSearchParams(location.search).get("calms")) || 45_000; // ?calms= shortens it for tests
   let moveLabel = ""; // kept for debugging in the console
   // Counts are cumulative, so re-sending the latest one every second is harmless and heals any dropped message.
   let lastCount: { move: string; count: number } | null = null;

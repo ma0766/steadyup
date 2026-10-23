@@ -62,6 +62,16 @@ const sm = sh("node", ["scripts/s7-smoke.mjs"]);
 step("bedrock live smoke", sm.status === 0 || sm.status === 2, sm.status === 2 ? "BLOCKED: Bedrock access" : "");
 if (sm.status !== 2) results.push({ slice: 7, name: "live plan smoke (valid, within caps)", ok: sm.status === 0 });
 
+// 7 Fire TV readiness: no Google Play services in any dependency
+const ps = sh("bash", ["scripts/check-no-play-services.sh"]);
+step("no Google Play services", ps.status === 0);
+results.push({ slice: 9, name: "no Google Play services in ./gradlew dependencies", ok: ps.status === 0 });
+
+// 8 Lighthouse accessibility >= 95 on the phone page (needs network; a network failure is reported, not hidden)
+const lh = sh("bash", ["scripts/lighthouse-a11y.sh"]);
+step("lighthouse accessibility >= 95", lh.status === 0);
+results.push({ slice: 9, name: "lighthouse accessibility 95+", ok: lh.status === 0 });
+
 console.log("\n=== verify: steps ===");
 for (const s of steps) console.log(`${s.ok ? "PASS" : "FAIL"}  ${s.name} ${s.note}`);
 console.log("\n=== verify: slices ===");

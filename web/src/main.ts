@@ -31,8 +31,8 @@ async function join(code: string) {
       if (e.kind === "connected") { $("join").classList.add("hidden"); say("Connected", "ok"); void beginCamera(); }
       else if (e.kind === "problem") say(e.message, "bad");
       else if (e.kind === "message" && e.data.type === "ack") live?.onAck(e.data.t);
-      else if (e.kind === "message" && e.data.type === "calibrate") { $("seen").textContent = "Stand up slowly, then sit down. Do it twice."; live?.startCalibration(); }
-      else if (e.kind === "message" && e.data.type === "move") { if (e.data.seq !== undefined && e.data.seq === lastSeq) return; lastSeq = e.data.seq; $("count").textContent = "0"; const bad = live?.setMove(e.data.move, e.data.side); if (bad) $("seen").textContent = bad; }
+      else if (e.kind === "message" && e.data.type === "calibrate") { $("note").textContent = "Stand up slowly, then sit down. Do it twice."; live?.startCalibration(); }
+      else if (e.kind === "message" && e.data.type === "move") { if (e.data.seq !== undefined && e.data.seq === lastSeq) return; lastSeq = e.data.seq; $("note").textContent = ""; $("count").textContent = "0"; const bad = live?.setMove(e.data.move, e.data.side); if (bad) $("seen").textContent = bad; }
       else if (e.kind === "message" && e.data.type === "state" && e.data.state === "set-end") live?.endSet();
     });
   } catch {

@@ -71,3 +71,41 @@ test("S9 chair stand: 'No' skips the test with a kind sentence", async () => {
     pressOk(); await expect.poll(() => logcat("SteadyUpFlow").split("shown=home").length, { timeout: 10_000 }).toBeGreaterThan(2);
   } finally { phone.close(); }
 });
+
+test("S9 the real phone page answers a calibration request (fake camera, scripted TV)", async ({ browser }) => {
+  test.setTimeout(2 * 60_000);
+  const { default: WebSocket } = await import("ws");
+  const tv = new WebSocket(endpoints.wsUrl);
+  const got: any[] = [];
+  const code: string = await new Promise((resolve, reject) => {
+    tv.on("open", () => tv.send(JSON.stringify({ type: "hello", role: "tv" })));
+    tv.on("message", (m) => { const j = JSON.parse(m.toString()); got.push(j); if (j.type === "code") resolve(j.code); });
+    tv.on("error", reject);
+  });
+  const page = await newPhone(browser);
+  await page.goto(`${endpoints.webUrl}/?code=${code}&delegate=cpu&calms=9000`);
+  await expect(page.locator("#status")).toHaveText("Connected", { timeout: 20_000 });
+  await expect(page.locator("#seen")).toHaveText("I can see you.", { timeout: 60_000 });
+  tv.send(JSON.stringify({ type: "calibrate" }));
+  await expect.poll(() => got.filter((m) => m.type === "cal").length, { timeout: 30_000 }).toBeGreaterThan(0);
+  await expect.poll(() => got.some((m) => m.type === "cal" && (m.state === "done" || m.state === "unclear")), { timeout: 30_000 }).toBe(true);
+  const final = got.filter((m) => m.type === "cal").at(-1);
+  expect(["done", "unclear", "progress"]).toContain(final.state); // a squat video may or may not be two clear stands: either answer is fine, silence is not
+  await expect(page.locator("#note")).toContainText("Stand up slowly");
+  tv.close();
+});
+
+test("S9 record the key screens: 2x2 home grid, a live set part-way through, the finish", async () => {
+  test.setTimeout(3 * 60_000);
+  const code = await tvCode(["--es", "plan", "sit_to_stand:8", "--ei", "restSec", "1"]);
+  const phone = new ScriptedPhone(endpoints.wsUrl);
+  phone.kneesCaveFirstSet = true;
+  try {
+    await phone.join(code);
+    await waitScreen("safety"); pressOk();
+    await waitScreen("home"); tvScreenshot("s9-home-grid"); pressOk();
+    await waitScreen("intro:0"); pressOk();
+    await waitScreen("live:0"); await sleep(8500); tvScreenshot("s9-live-midset");
+    await waitScreen("finish", 90_000); await sleep(800); tvScreenshot("s9-finish");
+  } finally { phone.close(); }
+});

@@ -13,6 +13,19 @@
 | S8 Move together | done | e2e s8-together: (1) two scripted people through real engines: both labelled figures, separate reps, TV log together=6 for 3+3 (docs/screens/s8-tv-room.png, s8-tv-two-figures.png); (2) two fake-camera browser pages (Mom paired to the TV, Ana joined from her own phone page): TV shows both figures and a Together total (s8-tv-two-cameras.png). Server unit: rooms, tagging, broadcast, refusals. | S8 |
 | S9 Submission pack | done | `bash scripts/clean-clone-check.sh`: fresh clone -> npm ci, npm test, APK built, Gradle tests pass; gitleaks: no leaks (12 commits); npm audit: 0 vulnerabilities; README, LICENSE (MIT), FEEDBACK.md, FRICTION_LOG.md, docs/DEMO.md, docs/MORNING-REPORT.md written | S9 |
 
+## World-class pass (branch worldclass, stage wc) — started 00:25 ET Fri
+
+| Item | Status | Proof |
+| --- | --- | --- |
+| Protect: tag submission-v1, branch worldclass, separate CDK stage `wc` | done | tag `submission-v1` pushed; stack `SteadyUp-wc` (`STAGE=wc npm run deploy`); main stack untouched until the end step. `config/endpoints.main.json` keeps the main URLs |
+| 1 Fresh-eyes audit | done | docs/AUDIT.md (fresh subagent, 10 ranked weaknesses) plus a status table of fixes |
+| 2 Personal calibration | done | web/src/engine/calibration.ts + s2b-calibration.test.ts: 3 builds x 3 distances, each calibrates from 2 slow reps then counts 10/10; unclear -> retry -> defaults; TV Calibrate screen; e2e s9-worldclass (unclear try repeats, then counts) and real phone page answers `calibrate` |
+| 3 CDC chair stand | done | engine chairStand.ts, TV flow (question, optional age/sex, instructions, 3-2-1, 30 s, result with CDC number), score saved, family trend; Kotlin S9WorldClassTest (table, exact wording, no diagnosis words); e2e screenshots docs/screens/s9-chair-*.png |
+| 4 Known gaps | done | rate limit (5 wrong/min/address, 1 min wait; unit + live e2e), Back saves actual reps, Together counts actual reps, unicode names, rooms close/expire (30 min TTL) |
+| 5 Fire TV readiness | done | tests/unit/s9-fire-tv.test.ts (leanback, banner 320x180, touchscreen not required, only INTERNET), `scripts/check-no-play-services.sh` in verify, focus ring asserted by `waitScreen` on every button screen via uiautomator, Back test over all screens, cues larger with no voice |
+| 6 Quality bar | done | axe (serious/critical none) on phone, together, family, recorder; 390 px no sideways scroll; console errors fail any browser test; tech-word scan of TV strings and phone pages; Lighthouse accessibility 100 on the phone page (`scripts/lighthouse-a11y.sh`); subagent TV screenshot review below |
+| 7 Demo and README | done | docs/DEMO.md (2:45, chair stand as the impact moment), README (3-line hook, sources, Where the code is) |
+
 ## Decisions
 
 - 21:12 ET Goal started (GOAL.txt). Hard stop 7:00 AM ET Fri, then S9.
@@ -55,6 +68,12 @@
 - S8: Together total = my finished reps + my live count + the guest's finished and live reps. Only body points and counts cross the relay; guests' video never leaves their phone. A second real TV joining a room is not built (the spec allowed one emulator with a split view).
 - S9: spoken cues cannot be heard on the Android TV emulator (no speech engine, `engine ready=false`); verified by logs and unit tests and disclosed in README and the morning report.
 - S9: rejected review nits left open on purpose (logged in the morning report): no attempt limit on pairing numbers, one guest per room, Back mid-set not saved, ASCII-only guest names.
+- WC: calibration bands = seated + 28% / 62% of the person's own seated-to-standing range (gap = hysteresis); needs 2 clear cycles and a range of at least 0.35 torso lengths; 3 unclear tries then defaults. The TV never blocks on it (Skip with OK).
+- WC: chair stand counts each FULL STAND (CDC: count a stand when fully up); one reminder 'Cross your arms on your chest' if the wrists hang. CDC compare line needs both age band and sex; otherwise a generic CDC line. Never a verdict.
+- WC: chair stand scores are stored as sets with move chair_stand_30 (target 30, done = stands) and kept out of sessions, streaks and totals.
+- WC: wrong-number limiter is per source address (API Gateway sourceIp), stored in DynamoDB with TTL; only wrong tries count.
+- WC: Home is a 2x2 grid (all four buttons fit at 1080p). Arrow keys: Start | Move together over This week | Chair stand check.
+- WC: MediaPipe's INFO line on the console error stream is ignored by the console-error check (not an app error).
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds

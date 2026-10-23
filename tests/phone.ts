@@ -8,7 +8,8 @@ export async function newPhone(browser: Browser): Promise<Page> {
   const ctx = await browser.newContext();
   open.push(ctx);
   const page = await ctx.newPage();
-  page.on("console", (m) => { if (m.type() === "error") errors.push(`console: ${m.text()}`); });
+  // MediaPipe writes an INFO line ("Created TensorFlow Lite XNNPACK delegate") to the error stream: not a problem
+  page.on("console", (m) => { if (m.type() === "error" && !m.text().startsWith("INFO:")) errors.push(`console: ${m.text()}`); });
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
   return page;
 }
