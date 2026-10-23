@@ -1,5 +1,7 @@
 // Live loop on the phone: camera -> pose -> throttled send (20/s). Also measures round-trip time via TV acks.
 import { createPoseDetector, packLandmarks } from "./pose";
+import { createEngine } from "./engine/engine";
+import type { EngineEvent } from "./engine/types";
 
 export const SEND_INTERVAL_MS = 50; // 20 messages/s to the TV
 
@@ -29,6 +31,15 @@ export async function startLive(
     throw e;
   }
   const tele: Telemetry = (window.__steadyup = { latenciesMs: [], sent: 0, detected: 0 });
+  const engine = createEngine("sit_to_stand"); // S4 will pick the move from the TV; counting lives on the phone
+  const forward = (events: EngineEvent[]) => {
+    for (const e of events) {
+      if (e.type === "rep") send({ type: "rep", move: e.move, count: e.count });
+      else if (e.type === "cue") send({ type: "cue", text: e.text });
+      else if (e.type === "low-confidence") send({ type: "state", state: "out-of-view" });
+      else if (e.type === "back-in-view") send({ type: "state", state: "in-view" });
+    }
+  };
   let last = 0, running = true, lastVideoTime = -1;
 
   const frame = () => {
@@ -40,6 +51,7 @@ export async function startLive(
         let lm: ReturnType<typeof detect> = null;
         try { lm = detect(video, now); } catch { /* one bad frame must not stop the loop */ }
         onTick(!!lm);
+        forward(engine.push({ t: now, lm }));
         if (lm) {
           last = now;
           tele.detected++;

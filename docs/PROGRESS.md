@@ -5,7 +5,7 @@
 | S0 Walking skeleton | done | `npm run verify` exit 0, S0 PASS (7 checks); docs/screens/s0-tv.png, s0-phone.png; deployed WS echo + HTTPS page e2e | S0 |
 | S1 Pairing | done | `npm run verify` exit 0: S1 PASS (server unit: code, join, expired, reused, dead TV; Gradle reducer tests; e2e: Playwright phone joins with code read from adb logcat, TV screenshots docs/screens/s1-tv-code.png, s1-tv-connected.png) | S1 |
 | S2 Live mirror | done | e2e: fake-camera y4m (real person) -> MediaPipe on phone page -> deployed relay -> TV figure (docs/screens/s2-tv-figure.png, two shots differ). Median phone->TV latency 82-85 ms, p95 ~110 ms (docs/LATENCY.md). Gradle S2MirrorTest (parse, smoother, mirror). | S2 |
-| S3 Rep engine: sit to stand | not started | | |
+| S3 Rep engine: sit to stand | done | vitest web/src/engine/s3-sit-to-stand.test.ts: 10/10 reps exact (jitter, near/far scale), 0 when out of frame or legs hidden, knee cue fires on caving fixture and not on clean; e2e recorder page saves landmark JSON from the fake camera | S3 |
 | S4 Session flow on TV | not started | | |
 | S5 All five moves | not started | | |
 | S6 History and family page | not started | | |
@@ -32,11 +32,15 @@
 - S2: fake-camera fixture is a CC BY 3.0 back-view squat video from Wikimedia (docs/FIXTURES.md); no front-view chair-stand video found, so S3+ use synthetic landmark streams, labelled as such.
 - S2: TV mirrors x (person's right = screen right), EMA smoothing alpha 0.55, figure clears after 2.5 s without points.
 - S2: e2e phones are closed after each test (tests/phone.ts); leaked camera pages starved CPU and made the next test flaky.
+- S3: a rep = seated -> standing -> seated (spec). Starting standing, the first sit down is not a rep.
+- S3: engine is wired into the phone live loop (sends rep / cue / out-of-view state); the TV does not show reps until S4.
 - `npm run dev` is vite only for now; local server stand-in comes with S1 if needed.
 
 ## Tuned thresholds
 
-- (move) value — fixture that proved it
+- sit_to_stand seated band: hip height < 1.2 torso lengths; standing band: > 1.5 (gap = hysteresis) — synthetic fixtures (hip height 1.0 seated, 1.8 standing, jitter 0.004, scale 0.55 to 1.3). Not yet checked on a real person: human check.
+- sit_to_stand knee cue: knee closer to midline than ankle by > 0.12 torso lengths — synthetic caving fixture (cave 0.2) fires, clean (cave 0) does not.
+- EMA smoothing alpha 0.5 on phone-side landmarks.
 
 ## Blocked on user
 

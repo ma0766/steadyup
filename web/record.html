@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SteadyUp recorder</title>
+<style>body{font:18px system-ui;margin:16px;background:#101820;color:#fff} button{font:600 20px system-ui;padding:12px 20px;margin:4px} video{width:240px;transform:scaleX(-1)} .hidden{display:none}</style>
+</head>
+<body>
+<h1>Fixture recorder</h1>
+<p>Records body points only (never video) to a JSON file you can use as a test fixture.</p>
+<video id="preview" playsinline muted></video>
+<p><button id="rec" type="button">Start</button><button id="stop" type="button" disabled>Stop</button></p>
+<p id="info">Idle.</p>
+<a id="download" class="hidden" download="landmarks.json">Save JSON</a>
+<script type="module" src="./src/recorder.ts"></script>
+</body>
+</html>
